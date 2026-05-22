@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>法政おさんぽルート</title>
-
+  <title>法政おさんぽルート MVP</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
@@ -19,27 +18,10 @@
       background: linear-gradient(135deg, #e8f5e9, #fff8e1);
       border-bottom: 1px solid #dde6d8;
     }
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: 0.02em;
-    }
-    .subtitle {
-      margin-top: 6px;
-      font-size: 13px;
-      color: #5e6b5f;
-      line-height: 1.5;
-    }
-    #map {
-      height: 48vh;
-      min-height: 360px;
-      width: 100%;
-    }
-    .panel {
-      padding: 14px;
-      display: grid;
-      gap: 12px;
-    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0.02em; }
+    .subtitle { margin-top: 6px; font-size: 13px; color: #5e6b5f; line-height: 1.5; }
+    #map { height: 48vh; min-height: 360px; width: 100%; }
+    .panel { padding: 14px; display: grid; gap: 12px; }
     .card {
       background: white;
       border: 1px solid #e3e7dd;
@@ -47,17 +29,8 @@
       padding: 14px;
       box-shadow: 0 8px 22px rgba(40, 60, 40, 0.08);
     }
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    label {
-      display: grid;
-      gap: 6px;
-      font-weight: 700;
-      font-size: 13px;
-    }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { display: grid; gap: 6px; font-weight: 700; font-size: 13px; }
     select, button {
       width: 100%;
       border-radius: 12px;
@@ -74,30 +47,11 @@
       cursor: pointer;
       box-shadow: 0 6px 14px rgba(47, 125, 79, 0.22);
     }
-    button.secondary {
-      background: #263128;
-    }
-    .buttons {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .route-title {
-      font-size: 20px;
-      font-weight: 900;
-      margin: 0 0 8px;
-    }
-    .muted {
-      color: #667063;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .spots-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 10px;
-    }
+    button.secondary { background: #263128; }
+    .buttons { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .route-title { font-size: 20px; font-weight: 900; margin: 0 0 8px; }
+    .muted { color: #667063; font-size: 13px; line-height: 1.6; }
+    .spots-list { display: grid; gap: 8px; margin-top: 10px; }
     .spot-row {
       display: flex;
       justify-content: space-between;
@@ -108,27 +62,10 @@
       background: #f8faf5;
       border: 1px solid #e9eee3;
     }
-    .spot-name {
-      font-weight: 800;
-    }
-    .spot-desc {
-      font-size: 12px;
-      color: #657064;
-      margin-top: 3px;
-      line-height: 1.45;
-    }
-    a {
-      color: #1f6fb2;
-      font-weight: 700;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
+    .spot-name { font-weight: 800; }
+    .spot-desc { font-size: 12px; color: #657064; margin-top: 3px; line-height: 1.45; }
+    a { color: #1f6fb2; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .chip {
       font-size: 11px;
       padding: 4px 8px;
@@ -137,18 +74,6 @@
       color: #3e6b45;
       font-weight: 700;
     }
-    .loading {
-      display: none;
-      grid-column: 1 / -1;
-      padding: 10px;
-      border-radius: 12px;
-      background: #eef7ee;
-      color: #2f7d4f;
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .loading.show { display: block; }
-
     .warning {
       font-size: 12px;
       line-height: 1.6;
@@ -158,7 +83,6 @@
       border-radius: 12px;
       padding: 10px;
     }
-
     .legend {
       display: flex;
       gap: 8px;
@@ -177,15 +101,9 @@
       padding: 5px 9px;
       font-weight: 700;
     }
-    .line-sample {
-      width: 22px;
-      height: 4px;
-      border-radius: 999px;
-      display: inline-block;
-    }
+    .line-sample { width: 22px; height: 4px; border-radius: 999px; display: inline-block; }
     .go-line { background: #2f7d4f; }
     .back-line { background: #1f6fb2; }
-
     .direction-arrow-wrap {
       width: 28px;
       height: 28px;
@@ -195,20 +113,24 @@
       transform-origin: center center;
     }
     .direction-arrow-triangle {
-      width: 0;
-      height: 0;
+      width: 0; height: 0;
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
       border-bottom: 18px solid currentColor;
     }
-
-    .route-section-title {
-      font-weight: 900;
-      margin-top: 12px;
-      margin-bottom: 6px;
-      font-size: 14px;
+    .route-section-title { font-weight: 900; margin-top: 12px; margin-bottom: 6px; font-size: 14px; }
+    .loading {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eef7ee;
+      color: #2f7d4f;
+      font-size: 13px;
+      font-weight: 800;
+      grid-column: 1 / -1;
     }
-
+    .loading.show { display: block; }
     @media (max-width: 640px) {
       #map { height: 46vh; min-height: 320px; }
       .controls { grid-template-columns: 1fr; }
@@ -220,7 +142,7 @@
   <header>
     <h1>法政おさんぽルート</h1>
     <div class="subtitle">
-      法政大学 富士見校舎をスタート＆ゴールに、歩きたい合計時間に近い散歩ルートを地図で表示します。滞在時間は含めず、徒歩時間だけで計算します。
+      法政大学 富士見校舎をスタート＆ゴールに、合計歩行時間に近い道なり散歩ルートを作ります。スポットは半径4km以内・MVP向け60件に絞っています。
     </div>
   </header>
 
@@ -233,17 +155,10 @@
         <select id="segmentSelect">
           <option value="完全ランダム">完全ランダム</option>
           <option value="リフレッシュ">リフレッシュ</option>
-          <option value="自然">自然</option>
-          <option value="観光">観光</option>
-          <option value="神社">神社・お寺</option>
           <option value="デート">デート</option>
-          <option value="カフェ">カフェ</option>
-          <option value="レストラン">レストラン</option>
-          <option value="グルメ">グルメ</option>
-          <option value="雨の日">雨の日</option>
           <option value="歴史">歴史</option>
           <option value="街歩き">街歩き</option>
-          <option value="坂道">坂道・運動</option>
+          <option value="グルメ">グルメ</option>
         </select>
       </label>
 
@@ -254,25 +169,23 @@
           <option value="30" selected>30分</option>
           <option value="45">45分</option>
           <option value="60">60分</option>
-          <option value="90">90分</option>
-          <option value="120">120分</option>
         </select>
       </label>
 
       <label>
-        スポット数
-        <select id="spotCountModeSelect">
-          <option value="auto" selected>自動で決める</option>
-          <option value="few">少なめ</option>
-          <option value="many">多め</option>
+        ルートの雰囲気
+        <select id="densitySelect">
+          <option value="auto" selected>自動でちょうどよく</option>
+          <option value="few">少なめに寄る</option>
+          <option value="many">多めに寄る</option>
         </select>
       </label>
 
       <label>
-        ルートの作り方
+        並び方
         <select id="modeSelect">
           <option value="smart" selected>近い順で自然につなぐ</option>
-          <option value="random">完全ランダム順</option>
+          <option value="random">ランダム順</option>
         </select>
       </label>
 
@@ -285,24 +198,24 @@
 
     <section class="card" id="routeCard">
       <p class="route-title">まずは「ルートを作る」を押してください</p>
-      <p class="muted">選んだ合計歩行時間に近いルートを作ります。滞在時間は含めず、徒歩時間だけを目安にします。</p>
+      <p class="muted">滞在時間は含めず、法政大学から出発して戻るまでの合計歩行時間が、選んだ時間に近くなるようにルートを作ります。</p>
     </section>
 
     <div class="warning">
-      注意：このMVPはOSRMの公開ルート取得を使っています。ルート候補は概算で選び、最後に表示するルートだけ道なり徒歩時間を計算します。公開アプリにする場合は、Google Maps Directions APIなどに差し替えるのがおすすめです。
+      注意：このMVPはOSRMの公開ルート取得を使っています。スマホや通信環境によって、道なり取得に時間がかかることがあります。
     </div>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const START_POINT = {
-      id: "hosei_fujimi",
-      name: "法政大学 富士見校舎",
-      lat: 35.6949,
-      lng: 139.7397,
-      description: "スタート＆ゴール地点",
-      url: "https://www.hosei.ac.jp/ichigaya/access/"
-    };
+      "id": "hosei_fujimi",
+      "name": "法政大学 富士見校舎",
+      "lat": 35.6949,
+      "lng": 139.7397,
+      "description": "スタート＆ゴール地点",
+      "url": "https://www.hosei.ac.jp/ichigaya/access/"
+};
 
     const spots = [
   {
@@ -318,7 +231,11 @@
     ],
     "description": "お濠沿いの緑豊かな散歩道",
     "url": "https://visit-chiyoda.tokyo/app/spot/detail/497",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 0.5
   },
   {
     "id": 2,
@@ -333,7 +250,13 @@
     ],
     "description": "水辺を見ながら軽く歩ける",
     "url": "https://www.google.com/search?q=%E5%B8%82%E3%83%B6%E8%B0%B7%E9%A7%85%E5%89%8D%20%E5%A4%96%E6%BF%A0%E3%82%A8%E3%83%AA%E3%82%A2%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.56
   },
   {
     "id": 3,
@@ -348,83 +271,16 @@
     ],
     "description": "短時間でも気分転換しやすい",
     "url": "https://www.google.com/search?q=%E9%A3%AF%E7%94%B0%E6%A9%8B%E9%A7%85%E8%A5%BF%E5%8F%A3%20%E3%81%8A%E6%BF%A0%E6%B2%BF%E3%81%84%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.66
   },
   {
     "id": 4,
-    "name": "逓信病院前の坂道",
-    "lat": 35.6991,
-    "lng": 139.7389,
-    "time": 15,
-    "segment": [
-      "軽い運動",
-      "坂道",
-      "15分"
-    ],
-    "description": "少しだけ運動感を出したい時向け",
-    "url": "https://www.google.com/search?q=%E9%80%93%E4%BF%A1%E7%97%85%E9%99%A2%E5%89%8D%E3%81%AE%E5%9D%82%E9%81%93%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 5,
-    "name": "法政大学 ボアソナード・タワー周辺",
-    "lat": 35.695,
-    "lng": 139.7397,
-    "time": 15,
-    "segment": [
-      "超近場",
-      "15分"
-    ],
-    "description": "授業の合間に使いやすい",
-    "url": "https://www.hosei.ac.jp/ichigaya/access/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 6,
-    "name": "九段下方面の靖国通り",
-    "lat": 35.6953,
-    "lng": 139.7462,
-    "time": 15,
-    "segment": [
-      "街歩き",
-      "15分"
-    ],
-    "description": "街の雰囲気を感じながら歩ける",
-    "url": "https://www.google.com/search?q=%E4%B9%9D%E6%AE%B5%E4%B8%8B%E6%96%B9%E9%9D%A2%E3%81%AE%E9%9D%96%E5%9B%BD%E9%80%9A%E3%82%8A%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 7,
-    "name": "富士見坂",
-    "lat": 35.6961,
-    "lng": 139.7407,
-    "time": 15,
-    "segment": [
-      "坂道",
-      "リフレッシュ",
-      "15分"
-    ],
-    "description": "短いが少し運動になる坂道",
-    "url": "https://www.google.com/search?q=%E5%AF%8C%E5%A3%AB%E8%A6%8B%E5%9D%82%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 8,
-    "name": "飯田橋ラムラ周辺",
-    "lat": 35.7006,
-    "lng": 139.7437,
-    "time": 15,
-    "segment": [
-      "街歩き",
-      "休憩",
-      "15分"
-    ],
-    "description": "駅近で買い物や休憩もできる",
-    "url": "https://www.ramla.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 9,
     "name": "市ヶ谷橋",
     "lat": 35.6918,
     "lng": 139.7361,
@@ -436,69 +292,196 @@
     ],
     "description": "外濠を見渡せる橋",
     "url": "https://www.google.com/search?q=%E5%B8%82%E3%83%B6%E8%B0%B7%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.47
+  },
+  {
+    "id": 5,
+    "name": "新見附橋",
+    "lat": 35.6999,
+    "lng": 139.7425,
+    "time": 30,
+    "segment": [
+      "水辺",
+      "リフレッシュ",
+      "30分"
+    ],
+    "description": "お濠と電車の景色が楽しめる",
+    "url": "https://www.google.com/search?q=%E6%96%B0%E8%A6%8B%E9%99%84%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.61
+  },
+  {
+    "id": 6,
+    "name": "北の丸公園",
+    "lat": 35.6916,
+    "lng": 139.7516,
+    "time": 45,
+    "segment": [
+      "自然",
+      "公園",
+      "リフレッシュ",
+      "45分"
+    ],
+    "description": "武道館近くの自然豊かな広い公園",
+    "url": "https://fng.or.jp/koukyo/place/kitanomaru/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 1.14
+  },
+  {
+    "id": 7,
+    "name": "千鳥ヶ淵緑道",
+    "lat": 35.6906,
+    "lng": 139.7462,
+    "time": 45,
+    "segment": [
+      "自然",
+      "桜",
+      "デート",
+      "45分"
+    ],
+    "description": "春は特に人気の水辺散歩道",
+    "url": "https://visit-chiyoda.tokyo/app/spot/detail/67",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 0.76
+  },
+  {
+    "id": 8,
+    "name": "千鳥ヶ淵ボート場",
+    "lat": 35.6915,
+    "lng": 139.746,
+    "time": 45,
+    "segment": [
+      "デート",
+      "水辺",
+      "45分"
+    ],
+    "description": "季節によってはボートも楽しめる",
+    "url": "https://visit-chiyoda.tokyo/app/spot/detail/65",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 0.68
+  },
+  {
+    "id": 9,
+    "name": "小石川後楽園",
+    "lat": 35.704,
+    "lng": 139.7487,
+    "time": 60,
+    "segment": [
+      "庭園",
+      "自然",
+      "デート",
+      "60分"
+    ],
+    "description": "日本庭園が美しい歴史ある名庭",
+    "url": "https://www.tokyo-park.or.jp/park/koishikawakorakuen/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 1.3
   },
   {
     "id": 10,
-    "name": "牛込見附跡",
-    "lat": 35.7001,
-    "lng": 139.7427,
-    "time": 15,
+    "name": "清水谷公園",
+    "lat": 35.6811,
+    "lng": 139.7352,
+    "time": 60,
     "segment": [
-      "歴史",
-      "街歩き",
-      "15分"
+      "公園",
+      "自然",
+      "デート"
     ],
-    "description": "江戸城外郭の雰囲気を感じられる",
-    "url": "https://www.google.com/search?q=%E7%89%9B%E8%BE%BC%E8%A6%8B%E9%99%84%E8%B7%A1%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "紀尾井町近くの落ち着いた公園",
+    "url": "https://visit-chiyoda.tokyo/app/spot/detail/99",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 1.59
   },
   {
     "id": 11,
-    "name": "靖国神社",
-    "lat": 35.6942,
-    "lng": 139.743,
-    "time": 15,
+    "name": "靖国神社 神池庭園",
+    "lat": 35.6943,
+    "lng": 139.7434,
+    "time": 30,
     "segment": [
-      "観光",
       "神社",
-      "歴史",
-      "30分"
+      "庭園",
+      "リフレッシュ"
     ],
-    "description": "広大な敷地と歴史を感じるスポット",
+    "description": "境内で静かに過ごせる庭園エリア",
     "url": "https://www.yasukuni.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "リフレッシュ",
+      "歴史"
+    ],
+    "campusDistanceKm": 0.34
   },
   {
     "id": 12,
-    "name": "東京大神宮",
-    "lat": 35.7001,
-    "lng": 139.7468,
+    "name": "若宮公園",
+    "lat": 35.7005,
+    "lng": 139.7398,
     "time": 30,
     "segment": [
-      "神社",
-      "デート",
-      "30分"
+      "公園",
+      "静か",
+      "デート"
     ],
-    "description": "縁結びで有名な東京のお伊勢さま",
-    "url": "https://www.tokyodaijingu.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "神楽坂近くの小さな公園",
+    "url": "https://www.google.com/search?q=%E8%8B%A5%E5%AE%AE%E5%85%AC%E5%9C%92%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 0.62
   },
   {
     "id": 13,
-    "name": "飯田橋サクラテラス",
-    "lat": 35.6993,
-    "lng": 139.7433,
-    "time": 30,
+    "name": "四ツ谷駅前 外濠公園側",
+    "lat": 35.6858,
+    "lng": 139.7307,
+    "time": 45,
     "segment": [
-      "グルメ",
+      "水辺",
       "デート",
-      "休憩",
-      "30分"
+      "リフレッシュ"
     ],
-    "description": "テラス席や飲食店が使いやすい商業施設",
-    "url": "https://www.iidabashi-sakuraterrace.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "四ツ谷方面へ軽く歩ける",
+    "url": "https://www.google.com/search?q=%E5%9B%9B%E3%83%84%E8%B0%B7%E9%A7%85%E5%89%8D%20%E5%A4%96%E6%BF%A0%E5%85%AC%E5%9C%92%E5%81%B4%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 1.3
   },
   {
     "id": 14,
@@ -514,10 +497,58 @@
     ],
     "description": "水辺の絶景カフェ。グルメ選択時に優先",
     "url": "https://www.canalcafe.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 0.73
   },
   {
     "id": 15,
+    "name": "東京大神宮",
+    "lat": 35.7001,
+    "lng": 139.7468,
+    "time": 30,
+    "segment": [
+      "神社",
+      "デート",
+      "30分"
+    ],
+    "description": "縁結びで有名な東京のお伊勢さま",
+    "url": "https://www.tokyodaijingu.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "歴史"
+    ],
+    "campusDistanceKm": 0.86
+  },
+  {
+    "id": 16,
+    "name": "飯田橋サクラテラス",
+    "lat": 35.6993,
+    "lng": 139.7433,
+    "time": 30,
+    "segment": [
+      "グルメ",
+      "デート",
+      "休憩",
+      "30分"
+    ],
+    "description": "テラス席や飲食店が使いやすい商業施設",
+    "url": "https://www.iidabashi-sakuraterrace.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.59
+  },
+  {
+    "id": 17,
     "name": "神楽坂通り",
     "lat": 35.7015,
     "lng": 139.7418,
@@ -529,26 +560,15 @@
     ],
     "description": "坂道と店並みが楽しい定番散歩エリア",
     "url": "https://www.kagurazaka.in/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 16,
-    "name": "善國寺 毘沙門天",
-    "lat": 35.7021,
-    "lng": 139.7408,
-    "time": 30,
-    "segment": [
-      "寺",
-      "観光",
-      "神楽坂",
-      "30分"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "街歩き"
     ],
-    "description": "神楽坂のシンボル的なお寺",
-    "url": "https://www.kagurazaka-bishamonten.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 0.76
   },
   {
-    "id": 17,
+    "id": 18,
     "name": "兵庫横丁",
     "lat": 35.7014,
     "lng": 139.7408,
@@ -561,10 +581,15 @@
     ],
     "description": "石畳が美しい神楽坂らしい路地",
     "url": "https://www.google.com/search?q=%E5%85%B5%E5%BA%AB%E6%A8%AA%E4%B8%81%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.73
   },
   {
-    "id": 18,
+    "id": 19,
     "name": "かくれんぼ横丁",
     "lat": 35.7019,
     "lng": 139.7412,
@@ -577,225 +602,75 @@
     ],
     "description": "大人っぽい雰囲気の路地散歩",
     "url": "https://www.google.com/search?q=%E3%81%8B%E3%81%8F%E3%82%8C%E3%82%93%E3%81%BC%E6%A8%AA%E4%B8%81%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 19,
-    "name": "筑土八幡神社",
-    "lat": 35.703,
-    "lng": 139.7443,
-    "time": 30,
-    "segment": [
-      "神社",
-      "静か",
-      "30分"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "街歩き"
     ],
-    "description": "神楽坂近くの落ち着いた神社",
-    "url": "https://www.tokyo-jinjacho.or.jp/shinjuku/5362/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 0.79
   },
   {
     "id": 20,
-    "name": "新見附橋",
-    "lat": 35.6999,
-    "lng": 139.7425,
-    "time": 30,
+    "name": "赤城神社",
+    "lat": 35.7048,
+    "lng": 139.7358,
+    "time": 45,
     "segment": [
-      "水辺",
-      "リフレッシュ",
-      "30分"
+      "神社",
+      "デート",
+      "神楽坂"
     ],
-    "description": "お濠と電車の景色が楽しめる",
-    "url": "https://www.google.com/search?q=%E6%96%B0%E8%A6%8B%E9%99%84%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "モダンな雰囲気の神楽坂の神社",
+    "url": "https://www.akagi-jinja.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "歴史"
+    ],
+    "campusDistanceKm": 1.16
   },
   {
     "id": 21,
-    "name": "北の丸公園",
-    "lat": 35.6916,
-    "lng": 139.7516,
-    "time": 45,
+    "name": "紀尾井町ガーデンテラス",
+    "lat": 35.6798,
+    "lng": 139.7366,
+    "time": 60,
     "segment": [
-      "自然",
-      "公園",
-      "リフレッシュ",
-      "45分"
+      "グルメ",
+      "デート",
+      "60分"
     ],
-    "description": "武道館近くの自然豊かな広い公園",
-    "url": "https://fng.or.jp/koukyo/place/kitanomaru/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "お洒落なアートと水辺が融合したエリア",
+    "url": "https://www.tgt-kioicho.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート"
+    ],
+    "campusDistanceKm": 1.7
   },
   {
     "id": 22,
-    "name": "日本武道館",
-    "lat": 35.6933,
-    "lng": 139.7498,
-    "time": 45,
+    "name": "東京ガーデンテラス紀尾井町",
+    "lat": 35.6799,
+    "lng": 139.7366,
+    "time": 60,
     "segment": [
-      "観光",
-      "建築",
-      "45分"
+      "商業",
+      "デート",
+      "グルメ"
     ],
-    "description": "北の丸公園内の有名スポット",
-    "url": "https://www.nipponbudokan.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "綺麗な街並みと飲食店がある",
+    "url": "https://www.tgt-kioicho.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート"
+    ],
+    "campusDistanceKm": 1.69
   },
   {
     "id": 23,
-    "name": "田安門",
-    "lat": 35.6939,
-    "lng": 139.7492,
-    "time": 45,
-    "segment": [
-      "歴史",
-      "写真",
-      "45分"
-    ],
-    "description": "江戸城の面影を感じられる門",
-    "url": "https://www.google.com/search?q=%E7%94%B0%E5%AE%89%E9%96%80%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 24,
-    "name": "清水門",
-    "lat": 35.6898,
-    "lng": 139.7511,
-    "time": 45,
-    "segment": [
-      "歴史",
-      "静か",
-      "45分"
-    ],
-    "description": "落ち着いた雰囲気の史跡",
-    "url": "https://www.google.com/search?q=%E6%B8%85%E6%B0%B4%E9%96%80%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 25,
-    "name": "千鳥ヶ淵緑道",
-    "lat": 35.6906,
-    "lng": 139.7462,
-    "time": 45,
-    "segment": [
-      "自然",
-      "桜",
-      "デート",
-      "45分"
-    ],
-    "description": "春は特に人気の水辺散歩道",
-    "url": "https://visit-chiyoda.tokyo/app/spot/detail/67",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 26,
-    "name": "千鳥ヶ淵ボート場",
-    "lat": 35.6915,
-    "lng": 139.746,
-    "time": 45,
-    "segment": [
-      "デート",
-      "水辺",
-      "45分"
-    ],
-    "description": "季節によってはボートも楽しめる",
-    "url": "https://visit-chiyoda.tokyo/app/spot/detail/65",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 27,
-    "name": "東京国立近代美術館",
-    "lat": 35.6904,
-    "lng": 139.7541,
-    "time": 45,
-    "segment": [
-      "美術館",
-      "雨の日",
-      "45分"
-    ],
-    "description": "屋内で文化的に過ごせる",
-    "url": "https://www.momat.go.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 28,
-    "name": "国立公文書館",
-    "lat": 35.6901,
-    "lng": 139.7537,
-    "time": 45,
-    "segment": [
-      "歴史",
-      "雨の日",
-      "45分"
-    ],
-    "description": "歴史資料に触れられる屋内スポット",
-    "url": "https://www.archives.go.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 29,
-    "name": "九段坂公園",
-    "lat": 35.6943,
-    "lng": 139.7469,
-    "time": 45,
-    "segment": [
-      "公園",
-      "歴史",
-      "45分"
-    ],
-    "description": "靖国神社や北の丸方面と組み合わせやすい",
-    "url": "https://visit-chiyoda.tokyo/app/spot/detail/101",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 30,
-    "name": "昭和館",
-    "lat": 35.6955,
-    "lng": 139.7511,
-    "time": 45,
-    "segment": [
-      "博物館",
-      "歴史",
-      "雨の日",
-      "45分"
-    ],
-    "description": "昭和期の暮らしや戦中戦後を学べる",
-    "url": "https://www.showakan.go.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 31,
-    "name": "小石川後楽園",
-    "lat": 35.704,
-    "lng": 139.7487,
-    "time": 60,
-    "segment": [
-      "庭園",
-      "自然",
-      "デート",
-      "60分"
-    ],
-    "description": "日本庭園が美しい歴史ある名庭",
-    "url": "https://www.tokyo-park.or.jp/park/koishikawakorakuen/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 32,
-    "name": "東京ドームシティ",
-    "lat": 35.7057,
-    "lng": 139.7519,
-    "time": 60,
-    "segment": [
-      "デート",
-      "雨の日",
-      "遊び",
-      "60分"
-    ],
-    "description": "食事・買い物・遊びをまとめて楽しめる",
-    "url": "https://www.tokyo-dome.co.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 33,
     "name": "ラクーア",
     "lat": 35.707,
     "lng": 139.7521,
@@ -808,85 +683,344 @@
     ],
     "description": "スパや飲食店があるリフレッシュ施設",
     "url": "https://www.laqua.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート"
+    ],
+    "campusDistanceKm": 1.75
+  },
+  {
+    "id": 24,
+    "name": "ホテルニューオータニ 日本庭園",
+    "lat": 35.6812,
+    "lng": 139.7359,
+    "time": 60,
+    "segment": [
+      "庭園",
+      "デート",
+      "写真"
+    ],
+    "description": "都会の中の日本庭園",
+    "url": "https://www.newotani.co.jp/tokyo/garden/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "リフレッシュ"
+    ],
+    "campusDistanceKm": 1.56
+  },
+  {
+    "id": 25,
+    "name": "靖国神社",
+    "lat": 35.6942,
+    "lng": 139.743,
+    "time": 15,
+    "segment": [
+      "観光",
+      "神社",
+      "歴史",
+      "30分"
+    ],
+    "description": "広大な敷地と歴史を感じるスポット",
+    "url": "https://www.yasukuni.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 0.31
+  },
+  {
+    "id": 26,
+    "name": "善國寺 毘沙門天",
+    "lat": 35.7021,
+    "lng": 139.7408,
+    "time": 30,
+    "segment": [
+      "寺",
+      "観光",
+      "神楽坂",
+      "30分"
+    ],
+    "description": "神楽坂のシンボル的なお寺",
+    "url": "https://www.kagurazaka-bishamonten.com/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 0.81
+  },
+  {
+    "id": 27,
+    "name": "筑土八幡神社",
+    "lat": 35.703,
+    "lng": 139.7443,
+    "time": 30,
+    "segment": [
+      "神社",
+      "静か",
+      "30分"
+    ],
+    "description": "神楽坂近くの落ち着いた神社",
+    "url": "https://www.tokyo-jinjacho.or.jp/shinjuku/5362/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 0.99
+  },
+  {
+    "id": 28,
+    "name": "日本武道館",
+    "lat": 35.6933,
+    "lng": 139.7498,
+    "time": 45,
+    "segment": [
+      "観光",
+      "建築",
+      "45分"
+    ],
+    "description": "北の丸公園内の有名スポット",
+    "url": "https://www.nipponbudokan.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 0.93
+  },
+  {
+    "id": 29,
+    "name": "田安門",
+    "lat": 35.6939,
+    "lng": 139.7492,
+    "time": 45,
+    "segment": [
+      "歴史",
+      "写真",
+      "45分"
+    ],
+    "description": "江戸城の面影を感じられる門",
+    "url": "https://www.google.com/search?q=%E7%94%B0%E5%AE%89%E9%96%80%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "歴史"
+    ],
+    "campusDistanceKm": 0.87
+  },
+  {
+    "id": 30,
+    "name": "清水門",
+    "lat": 35.6898,
+    "lng": 139.7511,
+    "time": 45,
+    "segment": [
+      "歴史",
+      "静か",
+      "45分"
+    ],
+    "description": "落ち着いた雰囲気の史跡",
+    "url": "https://www.google.com/search?q=%E6%B8%85%E6%B0%B4%E9%96%80%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.18
+  },
+  {
+    "id": 31,
+    "name": "東京国立近代美術館",
+    "lat": 35.6904,
+    "lng": 139.7541,
+    "time": 45,
+    "segment": [
+      "美術館",
+      "雨の日",
+      "45分"
+    ],
+    "description": "屋内で文化的に過ごせる",
+    "url": "https://www.momat.go.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.39
+  },
+  {
+    "id": 32,
+    "name": "国立公文書館",
+    "lat": 35.6901,
+    "lng": 139.7537,
+    "time": 45,
+    "segment": [
+      "歴史",
+      "雨の日",
+      "45分"
+    ],
+    "description": "歴史資料に触れられる屋内スポット",
+    "url": "https://www.archives.go.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.37
+  },
+  {
+    "id": 33,
+    "name": "九段坂公園",
+    "lat": 35.6943,
+    "lng": 139.7469,
+    "time": 45,
+    "segment": [
+      "公園",
+      "歴史",
+      "45分"
+    ],
+    "description": "靖国神社や北の丸方面と組み合わせやすい",
+    "url": "https://visit-chiyoda.tokyo/app/spot/detail/101",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "リフレッシュ",
+      "歴史"
+    ],
+    "campusDistanceKm": 0.65
   },
   {
     "id": 34,
-    "name": "後楽園駅周辺",
-    "lat": 35.707,
+    "name": "昭和館",
+    "lat": 35.6955,
     "lng": 139.7511,
-    "time": 60,
+    "time": 45,
     "segment": [
-      "街歩き",
-      "グルメ",
-      "60分"
+      "博物館",
+      "歴史",
+      "雨の日",
+      "45分"
     ],
-    "description": "小石川後楽園やドームと組み合わせやすい",
-    "url": "https://www.google.com/search?q=%E5%BE%8C%E6%A5%BD%E5%9C%92%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "昭和期の暮らしや戦中戦後を学べる",
+    "url": "https://www.showakan.go.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.03
   },
   {
     "id": 35,
-    "name": "春日駅周辺",
-    "lat": 35.7098,
-    "lng": 139.7522,
-    "time": 60,
+    "name": "市谷亀岡八幡宮",
+    "lat": 35.691,
+    "lng": 139.7333,
+    "time": 30,
     "segment": [
-      "街歩き",
-      "60分"
+      "神社",
+      "歴史",
+      "30分"
     ],
-    "description": "文京区方面へしっかり歩ける",
-    "url": "https://www.google.com/search?q=%E6%98%A5%E6%97%A5%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "市ヶ谷駅近くの落ち着いた神社",
+    "url": "https://www.ichigayahachiman.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 0.72
   },
   {
     "id": 36,
-    "name": "赤坂御用地周辺",
-    "lat": 35.6798,
-    "lng": 139.7307,
+    "name": "平河天満宮",
+    "lat": 35.6824,
+    "lng": 139.7417,
     "time": 60,
     "segment": [
-      "アクティブ",
-      "坂道",
-      "自然",
+      "神社",
+      "学業",
       "60分"
     ],
-    "description": "坂道が多く、しっかり歩きたい人向け",
-    "url": "https://www.google.com/search?q=%E8%B5%A4%E5%9D%82%E5%BE%A1%E7%94%A8%E5%9C%B0%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "学業祈願にも合う天満宮",
+    "url": "https://hirakawatenjin.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.4
   },
   {
     "id": 37,
-    "name": "紀尾井町ガーデンテラス",
-    "lat": 35.6798,
-    "lng": 139.7366,
+    "name": "日枝神社",
+    "lat": 35.6747,
+    "lng": 139.7398,
     "time": 60,
     "segment": [
-      "グルメ",
-      "デート",
-      "60分"
+      "神社",
+      "観光",
+      "デート"
     ],
-    "description": "お洒落なアートと水辺が融合したエリア",
-    "url": "https://www.tgt-kioicho.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "赤坂方面の有名神社",
+    "url": "https://www.hiejinja.net/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "歴史"
+    ],
+    "campusDistanceKm": 2.25
   },
   {
     "id": 38,
-    "name": "赤坂見附駅周辺",
-    "lat": 35.6773,
-    "lng": 139.7372,
-    "time": 60,
+    "name": "科学技術館",
+    "lat": 35.6914,
+    "lng": 139.7527,
+    "time": 45,
     "segment": [
-      "グルメ",
-      "街歩き",
-      "60分"
+      "博物館",
+      "雨の日",
+      "体験"
     ],
-    "description": "飲食店が多く夜散歩にも使いやすい",
-    "url": "https://www.google.com/search?q=%E8%B5%A4%E5%9D%82%E8%A6%8B%E9%99%84%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "体験型展示が多い屋内スポット",
+    "url": "https://www.jsf.or.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.24
   },
   {
     "id": 39,
+    "name": "新宿歴史博物館",
+    "lat": 35.6875,
+    "lng": 139.7255,
+    "time": 60,
+    "segment": [
+      "博物館",
+      "歴史",
+      "雨の日"
+    ],
+    "description": "新宿区の歴史を学べる",
+    "url": "https://www.regasu-shinjuku.or.jp/rekihaku/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史"
+    ],
+    "campusDistanceKm": 1.52
+  },
+  {
+    "id": 40,
+    "name": "防衛省 市ヶ谷記念館周辺",
+    "lat": 35.6929,
+    "lng": 139.7288,
+    "time": 45,
+    "segment": [
+      "歴史",
+      "街歩き"
+    ],
+    "description": "市ヶ谷台方面の歴史散歩に使える",
+    "url": "https://www.mod.go.jp/j/profile/mod_sdf/ichigaya/index.html",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史",
+      "街歩き"
+    ],
+    "campusDistanceKm": 1.01
+  },
+  {
+    "id": 41,
     "name": "迎賓館赤坂離宮 外観エリア",
     "lat": 35.6807,
     "lng": 139.7288,
@@ -899,40 +1033,55 @@
     ],
     "description": "ヨーロッパ風建築を外から楽しめる",
     "url": "https://www.geihinkan.go.jp/akasaka/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 40,
-    "name": "四谷見附橋",
-    "lat": 35.686,
-    "lng": 139.7311,
-    "time": 60,
-    "segment": [
-      "橋",
-      "街歩き",
-      "60分"
-    ],
-    "description": "四ツ谷方面の散歩ルートに入れやすい",
-    "url": "https://www.google.com/search?q=%E5%9B%9B%E8%B0%B7%E8%A6%8B%E9%99%84%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 41,
-    "name": "赤城神社",
-    "lat": 35.7048,
-    "lng": 139.7358,
-    "time": 45,
-    "segment": [
-      "神社",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
       "デート",
-      "神楽坂"
+      "歴史"
     ],
-    "description": "モダンな雰囲気の神楽坂の神社",
-    "url": "https://www.akagi-jinja.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 1.86
   },
   {
     "id": 42,
+    "name": "富士見坂",
+    "lat": 35.6961,
+    "lng": 139.7407,
+    "time": 15,
+    "segment": [
+      "坂道",
+      "リフレッシュ",
+      "15分"
+    ],
+    "description": "短いが少し運動になる坂道",
+    "url": "https://www.google.com/search?q=%E5%AF%8C%E5%A3%AB%E8%A6%8B%E5%9D%82%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "リフレッシュ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.16
+  },
+  {
+    "id": 43,
+    "name": "牛込見附跡",
+    "lat": 35.7001,
+    "lng": 139.7427,
+    "time": 15,
+    "segment": [
+      "歴史",
+      "街歩き",
+      "15分"
+    ],
+    "description": "江戸城外郭の雰囲気を感じられる",
+    "url": "https://www.google.com/search?q=%E7%89%9B%E8%BE%BC%E8%A6%8B%E9%99%84%E8%B7%A1%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "歴史",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.64
+  },
+  {
+    "id": 44,
     "name": "神楽坂 若宮八幡神社",
     "lat": 35.701,
     "lng": 139.7395,
@@ -944,576 +1093,16 @@
     ],
     "description": "路地散歩と一緒に寄りやすい小さな神社",
     "url": "https://www.google.com/search?q=%E7%A5%9E%E6%A5%BD%E5%9D%82%20%E8%8B%A5%E5%AE%AE%E5%85%AB%E5%B9%A1%E7%A5%9E%E7%A4%BE%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 43,
-    "name": "牛込柳町 厳嶋神社",
-    "lat": 35.6995,
-    "lng": 139.7263,
-    "time": 60,
-    "segment": [
-      "神社",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "歴史",
       "街歩き"
     ],
-    "description": "西側へ歩きたい時の目的地",
-    "url": "https://www.google.com/search?q=%E7%89%9B%E8%BE%BC%E6%9F%B3%E7%94%BA%20%E5%8E%B3%E5%B6%8B%E7%A5%9E%E7%A4%BE%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 44,
-    "name": "市谷亀岡八幡宮",
-    "lat": 35.691,
-    "lng": 139.7333,
-    "time": 30,
-    "segment": [
-      "神社",
-      "歴史",
-      "30分"
-    ],
-    "description": "市ヶ谷駅近くの落ち着いた神社",
-    "url": "https://www.ichigayahachiman.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 0.68
   },
   {
     "id": 45,
-    "name": "靖国神社 神池庭園",
-    "lat": 35.6943,
-    "lng": 139.7434,
-    "time": 30,
-    "segment": [
-      "神社",
-      "庭園",
-      "リフレッシュ"
-    ],
-    "description": "境内で静かに過ごせる庭園エリア",
-    "url": "https://www.yasukuni.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 46,
-    "name": "平河天満宮",
-    "lat": 35.6824,
-    "lng": 139.7417,
-    "time": 60,
-    "segment": [
-      "神社",
-      "学業",
-      "60分"
-    ],
-    "description": "学業祈願にも合う天満宮",
-    "url": "https://hirakawatenjin.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 47,
-    "name": "日枝神社",
-    "lat": 35.6747,
-    "lng": 139.7398,
-    "time": 60,
-    "segment": [
-      "神社",
-      "観光",
-      "デート"
-    ],
-    "description": "赤坂方面の有名神社",
-    "url": "https://www.hiejinja.net/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 48,
-    "name": "金刀比羅宮 東京分社",
-    "lat": 35.7047,
-    "lng": 139.7547,
-    "time": 60,
-    "segment": [
-      "神社",
-      "水道橋"
-    ],
-    "description": "水道橋方面の静かな参拝スポット",
-    "url": "https://www.tokyo-jinjacho.or.jp/bunkyo/5459/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 49,
-    "name": "湯島聖堂",
-    "lat": 35.7003,
-    "lng": 139.7673,
-    "time": 60,
-    "segment": [
-      "歴史",
-      "学問",
-      "観光"
-    ],
-    "description": "学問に関係する歴史スポット",
-    "url": "https://www.seido.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 50,
-    "name": "神田明神",
-    "lat": 35.7021,
-    "lng": 139.7675,
-    "time": 60,
-    "segment": [
-      "神社",
-      "観光",
-      "アニメ"
-    ],
-    "description": "神田・御茶ノ水方面の有名神社",
-    "url": "https://www.kandamyoujin.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 51,
-    "name": "科学技術館",
-    "lat": 35.6914,
-    "lng": 139.7527,
-    "time": 45,
-    "segment": [
-      "博物館",
-      "雨の日",
-      "体験"
-    ],
-    "description": "体験型展示が多い屋内スポット",
-    "url": "https://www.jsf.or.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 52,
-    "name": "東京国立近代美術館 工芸館周辺",
-    "lat": 35.6915,
-    "lng": 139.7521,
-    "time": 45,
-    "segment": [
-      "美術",
-      "建築",
-      "雨の日"
-    ],
-    "description": "北の丸エリアの文化散歩に合う",
-    "url": "https://www.momat.go.jp/cg",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 53,
-    "name": "印刷博物館",
-    "lat": 35.7088,
-    "lng": 139.7428,
-    "time": 60,
-    "segment": [
-      "博物館",
-      "雨の日",
-      "学び"
-    ],
-    "description": "印刷やメディアの歴史を学べる",
-    "url": "https://www.printing-museum.org/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 54,
-    "name": "文京シビックセンター 展望ラウンジ",
-    "lat": 35.7079,
-    "lng": 139.7526,
-    "time": 60,
-    "segment": [
-      "展望",
-      "無料",
-      "雨の日"
-    ],
-    "description": "無料で景色を楽しめる展望スポット",
-    "url": "https://www.city.bunkyo.lg.jp/b014/p003980.html",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 55,
-    "name": "アンスティチュ・フランセ東京",
-    "lat": 35.699,
-    "lng": 139.7381,
-    "time": 15,
-    "segment": [
-      "文化",
-      "カフェ",
-      "近場"
-    ],
-    "description": "フランス文化に触れられる施設",
-    "url": "https://www.institutfrancais.jp/tokyo/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 56,
-    "name": "新宿歴史博物館",
-    "lat": 35.6875,
-    "lng": 139.7255,
-    "time": 60,
-    "segment": [
-      "博物館",
-      "歴史",
-      "雨の日"
-    ],
-    "description": "新宿区の歴史を学べる",
-    "url": "https://www.regasu-shinjuku.or.jp/rekihaku/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 57,
-    "name": "防衛省 市ヶ谷記念館周辺",
-    "lat": 35.6929,
-    "lng": 139.7288,
-    "time": 45,
-    "segment": [
-      "歴史",
-      "街歩き"
-    ],
-    "description": "市ヶ谷台方面の歴史散歩に使える",
-    "url": "https://www.mod.go.jp/j/profile/mod_sdf/ichigaya/index.html",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 58,
-    "name": "ホテルニューオータニ 日本庭園",
-    "lat": 35.6812,
-    "lng": 139.7359,
-    "time": 60,
-    "segment": [
-      "庭園",
-      "デート",
-      "写真"
-    ],
-    "description": "都会の中の日本庭園",
-    "url": "https://www.newotani.co.jp/tokyo/garden/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 59,
-    "name": "東京ガーデンテラス紀尾井町",
-    "lat": 35.6799,
-    "lng": 139.7366,
-    "time": 60,
-    "segment": [
-      "商業",
-      "デート",
-      "グルメ"
-    ],
-    "description": "綺麗な街並みと飲食店がある",
-    "url": "https://www.tgt-kioicho.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 60,
-    "name": "ホテルメトロポリタン エドモント周辺",
-    "lat": 35.7017,
-    "lng": 139.7467,
-    "time": 30,
-    "segment": [
-      "休憩",
-      "グルメ",
-      "30分"
-    ],
-    "description": "飯田橋周辺の落ち着いたホテルエリア",
-    "url": "https://edmont.metropolitan.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 61,
-    "name": "PAUL 神楽坂店",
-    "lat": 35.7021,
-    "lng": 139.7416,
-    "time": 30,
-    "segment": [
-      "カフェ",
-      "パン",
-      "神楽坂"
-    ],
-    "description": "散歩中の軽食に使いやすい",
-    "url": "https://www.pasconet.co.jp/paul/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 62,
-    "name": "あかぎカフェ",
-    "lat": 35.7048,
-    "lng": 139.7358,
-    "time": 45,
-    "segment": [
-      "カフェ",
-      "神社",
-      "デート"
-    ],
-    "description": "赤城神社境内のカフェ",
-    "url": "https://www.akagi-cafe.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 63,
-    "name": "トンボロ 神楽坂",
-    "lat": 35.703,
-    "lng": 139.7392,
-    "time": 45,
-    "segment": [
-      "カフェ",
-      "静か",
-      "神楽坂"
-    ],
-    "description": "落ち着いた喫茶店系の休憩候補",
-    "url": "https://www.google.com/search?q=%E3%83%88%E3%83%B3%E3%83%9C%E3%83%AD%20%E7%A5%9E%E6%A5%BD%E5%9D%82%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 64,
-    "name": "アトリエコータ 神楽坂",
-    "lat": 35.7028,
-    "lng": 139.7383,
-    "time": 45,
-    "segment": [
-      "カフェ",
-      "スイーツ",
-      "デート"
-    ],
-    "description": "スイーツ好き向け",
-    "url": "https://www.atelierkohta.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 65,
-    "name": "紀の善跡地周辺 神楽坂下",
-    "lat": 35.7014,
-    "lng": 139.742,
-    "time": 30,
-    "segment": [
-      "甘味",
-      "街歩き",
-      "神楽坂"
-    ],
-    "description": "神楽坂下の散策拠点",
-    "url": "https://www.google.com/search?q=%E7%B4%80%E3%81%AE%E5%96%84%E8%B7%A1%E5%9C%B0%E5%91%A8%E8%BE%BA%20%E7%A5%9E%E6%A5%BD%E5%9D%82%E4%B8%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 66,
-    "name": "ロイヤルガーデンカフェ 飯田橋",
-    "lat": 35.6994,
-    "lng": 139.7434,
-    "time": 30,
-    "segment": [
-      "カフェ",
-      "デート",
-      "サクラテラス"
-    ],
-    "description": "飯田橋サクラテラス内の休憩候補",
-    "url": "https://royal-gardencafe.com/iidabashi/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 67,
-    "name": "スターバックス 飯田橋サクラテラス店",
-    "lat": 35.6994,
-    "lng": 139.7434,
-    "time": 30,
-    "segment": [
-      "カフェ",
-      "作業",
-      "休憩"
-    ],
-    "description": "安定して使いやすいチェーンカフェ",
-    "url": "https://store.starbucks.co.jp/detail-1259/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 68,
-    "name": "ドトール 市ヶ谷駅前店",
-    "lat": 35.6912,
-    "lng": 139.7362,
-    "time": 15,
-    "segment": [
-      "カフェ",
-      "近場",
-      "休憩"
-    ],
-    "description": "短時間の休憩に使いやすい",
-    "url": "https://www.doutor.co.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 69,
-    "name": "No.4",
-    "lat": 35.6865,
-    "lng": 139.7397,
-    "time": 45,
-    "segment": [
-      "カフェ",
-      "パン",
-      "デート"
-    ],
-    "description": "麹町方面のおしゃれカフェ候補",
-    "url": "https://www.tysons.jp/no4/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 70,
-    "name": "ラ・プレシューズ 紀尾井町",
-    "lat": 35.6799,
-    "lng": 139.7367,
-    "time": 60,
-    "segment": [
-      "カフェ",
-      "スイーツ",
-      "デート"
-    ],
-    "description": "紀尾井町散歩の休憩に合う",
-    "url": "https://www.la-precieuse.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 71,
-    "name": "カナルカフェ レストランサイド",
-    "lat": 35.7006,
-    "lng": 139.7438,
-    "time": 30,
-    "segment": [
-      "レストラン",
-      "デート",
-      "水辺"
-    ],
-    "description": "水辺デートに強いイタリアン",
-    "url": "https://www.canalcafe.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 72,
-    "name": "神楽坂 茶寮 本店",
-    "lat": 35.7033,
-    "lng": 139.7387,
-    "time": 45,
-    "segment": [
-      "和カフェ",
-      "デート",
-      "神楽坂"
-    ],
-    "description": "和スイーツや食事で使いやすい",
-    "url": "https://saryo.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 73,
-    "name": "俺のフレンチ 神楽坂",
-    "lat": 35.703,
-    "lng": 139.7398,
-    "time": 45,
-    "segment": [
-      "フレンチ",
-      "デート",
-      "グルメ"
-    ],
-    "description": "コスパ良くフレンチ気分を出しやすい",
-    "url": "https://www.oreno.co.jp/restaurant/oreno-french-kagurazaka",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 74,
-    "name": "ル・ブルターニュ 神楽坂",
-    "lat": 35.7028,
-    "lng": 139.739,
-    "time": 45,
-    "segment": [
-      "ガレット",
-      "デート",
-      "神楽坂"
-    ],
-    "description": "神楽坂らしい雰囲気の食事候補",
-    "url": "https://www.le-bretagne.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 75,
-    "name": "鳥茶屋 別亭",
-    "lat": 35.7019,
-    "lng": 139.7404,
-    "time": 45,
-    "segment": [
-      "和食",
-      "神楽坂",
-      "デート"
-    ],
-    "description": "神楽坂らしい和食候補",
-    "url": "https://www.torijaya.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 76,
-    "name": "神楽坂 翔山亭",
-    "lat": 35.703,
-    "lng": 139.74,
-    "time": 45,
-    "segment": [
-      "焼肉",
-      "デート",
-      "グルメ"
-    ],
-    "description": "少し贅沢な食事向け",
-    "url": "https://shozantei.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 77,
-    "name": "九頭龍蕎麦 神楽坂",
-    "lat": 35.7035,
-    "lng": 139.7397,
-    "time": 45,
-    "segment": [
-      "蕎麦",
-      "和食",
-      "神楽坂"
-    ],
-    "description": "落ち着いた和食散歩に合う",
-    "url": "https://kuzuryu-soba.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 78,
-    "name": "神楽坂 石かわ周辺",
-    "lat": 35.7032,
-    "lng": 139.7381,
-    "time": 45,
-    "segment": [
-      "高級和食",
-      "大人デート"
-    ],
-    "description": "特別感のある神楽坂エリア",
-    "url": "https://kagurazaka-ishikawa.co.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 79,
-    "name": "ラリアンス",
-    "lat": 35.7026,
-    "lng": 139.7395,
-    "time": 45,
-    "segment": [
-      "フレンチ",
-      "記念日",
-      "デート"
-    ],
-    "description": "記念日感を出しやすい神楽坂レストラン",
-    "url": "https://www.lalliance.jp/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 80,
-    "name": "飯田橋 グラン・ボッカ周辺",
-    "lat": 35.7007,
-    "lng": 139.7432,
-    "time": 30,
-    "segment": [
-      "イタリアン",
-      "グルメ",
-      "デート"
-    ],
-    "description": "飯田橋で食事に寄りやすい",
-    "url": "https://www.gran-bocca.com/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 81,
     "name": "神楽坂上",
     "lat": 35.7035,
     "lng": 139.7379,
@@ -1525,10 +1114,15 @@
     ],
     "description": "坂の上まで歩くと散歩感が出る",
     "url": "https://www.google.com/search?q=%E7%A5%9E%E6%A5%BD%E5%9D%82%E4%B8%8A%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.97
   },
   {
-    "id": 82,
+    "id": 46,
     "name": "神楽坂下",
     "lat": 35.7013,
     "lng": 139.7421,
@@ -1540,10 +1134,15 @@
     ],
     "description": "飯田橋から神楽坂へ入る入口",
     "url": "https://www.google.com/search?q=%E7%A5%9E%E6%A5%BD%E5%9D%82%E4%B8%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.74
   },
   {
-    "id": 83,
+    "id": 47,
     "name": "本多横丁",
     "lat": 35.7024,
     "lng": 139.7406,
@@ -1555,10 +1154,16 @@
     ],
     "description": "飲食店が並ぶ神楽坂の横丁",
     "url": "https://www.google.com/search?q=%E6%9C%AC%E5%A4%9A%E6%A8%AA%E4%B8%81%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.84
   },
   {
-    "id": 84,
+    "id": 48,
     "name": "芸者新道",
     "lat": 35.7018,
     "lng": 139.7413,
@@ -1570,85 +1175,34 @@
     ],
     "description": "神楽坂らしい細い路地",
     "url": "https://www.google.com/search?q=%E8%8A%B8%E8%80%85%E6%96%B0%E9%81%93%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 85,
-    "name": "若宮公園",
-    "lat": 35.7005,
-    "lng": 139.7398,
-    "time": 30,
-    "segment": [
-      "公園",
-      "静か",
-      "デート"
-    ],
-    "description": "神楽坂近くの小さな公園",
-    "url": "https://www.google.com/search?q=%E8%8B%A5%E5%AE%AE%E5%85%AC%E5%9C%92%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 86,
-    "name": "外濠の夜景ポイント 飯田橋側",
-    "lat": 35.7001,
-    "lng": 139.7428,
-    "time": 30,
-    "segment": [
-      "夜景",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
       "デート",
-      "水辺"
+      "街歩き"
     ],
-    "description": "夜の散歩に使いやすい",
-    "url": "https://www.google.com/search?q=%E5%A4%96%E6%BF%A0%E3%81%AE%E5%A4%9C%E6%99%AF%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E9%A3%AF%E7%94%B0%E6%A9%8B%E5%81%B4%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 0.78
   },
   {
-    "id": 87,
-    "name": "紀尾井清堂周辺",
-    "lat": 35.6807,
-    "lng": 139.7361,
+    "id": 49,
+    "name": "四谷見附橋",
+    "lat": 35.686,
+    "lng": 139.7311,
     "time": 60,
     "segment": [
-      "建築",
-      "デート",
-      "写真"
+      "橋",
+      "街歩き",
+      "60分"
     ],
-    "description": "紀尾井町の建築散歩向け",
-    "url": "https://www.google.com/search?q=%E7%B4%80%E5%B0%BE%E4%BA%95%E6%B8%85%E5%A0%82%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "description": "四ツ谷方面の散歩ルートに入れやすい",
+    "url": "https://www.google.com/search?q=%E5%9B%9B%E8%B0%B7%E8%A6%8B%E9%99%84%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "街歩き"
+    ],
+    "campusDistanceKm": 1.26
   },
   {
-    "id": 88,
-    "name": "清水谷公園",
-    "lat": 35.6811,
-    "lng": 139.7352,
-    "time": 60,
-    "segment": [
-      "公園",
-      "自然",
-      "デート"
-    ],
-    "description": "紀尾井町近くの落ち着いた公園",
-    "url": "https://visit-chiyoda.tokyo/app/spot/detail/99",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 89,
-    "name": "四ツ谷駅前 外濠公園側",
-    "lat": 35.6858,
-    "lng": 139.7307,
-    "time": 45,
-    "segment": [
-      "水辺",
-      "デート",
-      "リフレッシュ"
-    ],
-    "description": "四ツ谷方面へ軽く歩ける",
-    "url": "https://www.google.com/search?q=%E5%9B%9B%E3%83%84%E8%B0%B7%E9%A7%85%E5%89%8D%20%E5%A4%96%E6%BF%A0%E5%85%AC%E5%9C%92%E5%81%B4%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 90,
+    "id": 50,
     "name": "麹町駅周辺",
     "lat": 35.6842,
     "lng": 139.7377,
@@ -1660,100 +1214,15 @@
     ],
     "description": "落ち着いたオフィス街散歩",
     "url": "https://www.google.com/search?q=%E9%BA%B9%E7%94%BA%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 91,
-    "name": "皇居外苑 和田倉噴水公園",
-    "lat": 35.6849,
-    "lng": 139.7614,
-    "time": 60,
-    "segment": [
-      "公園",
-      "水辺",
-      "デート"
-    ],
-    "description": "開放感のある水辺スポット",
-    "url": "https://fng.or.jp/koukyo/place/gaien/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 92,
-    "name": "二重橋前",
-    "lat": 35.6813,
-    "lng": 139.7567,
-    "time": 60,
-    "segment": [
-      "観光",
-      "歴史",
-      "写真"
-    ],
-    "description": "皇居観光の定番スポット",
-    "url": "https://fng.or.jp/koukyo/place/gaien/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 93,
-    "name": "皇居東御苑 大手門",
-    "lat": 35.6854,
-    "lng": 139.7614,
-    "time": 60,
-    "segment": [
-      "庭園",
-      "歴史",
-      "自然"
-    ],
-    "description": "江戸城跡を感じられる庭園エリア",
-    "url": "https://www.kunaicho.go.jp/event/higashigyoen/higashigyoen.html",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 94,
-    "name": "竹橋駅周辺",
-    "lat": 35.6908,
-    "lng": 139.7571,
-    "time": 45,
-    "segment": [
-      "街歩き",
-      "美術館",
-      "皇居"
-    ],
-    "description": "北の丸・皇居方面の中継地点",
-    "url": "https://www.google.com/search?q=%E7%AB%B9%E6%A9%8B%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 95,
-    "name": "御茶ノ水 聖橋",
-    "lat": 35.6994,
-    "lng": 139.7642,
-    "time": 60,
-    "segment": [
-      "橋",
-      "写真",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
       "街歩き"
     ],
-    "description": "電車と街並みが見える有名な橋",
-    "url": "https://www.google.com/search?q=%E5%BE%A1%E8%8C%B6%E3%83%8E%E6%B0%B4%20%E8%81%96%E6%A9%8B%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 1.2
   },
   {
-    "id": 96,
-    "name": "ニコライ堂",
-    "lat": 35.6989,
-    "lng": 139.765,
-    "time": 60,
-    "segment": [
-      "建築",
-      "観光",
-      "写真"
-    ],
-    "description": "御茶ノ水の美しい教会建築",
-    "url": "https://nikolaido.org/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 97,
+    "id": 51,
     "name": "神保町古書店街",
     "lat": 35.6958,
     "lng": 139.7585,
@@ -1765,10 +1234,14 @@
     ],
     "description": "本好き向けの街歩きスポット",
     "url": "https://jimbou.info/",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "街歩き"
+    ],
+    "campusDistanceKm": 1.7
   },
   {
-    "id": 98,
+    "id": 52,
     "name": "神保町カレーエリア",
     "lat": 35.6955,
     "lng": 139.7581,
@@ -1780,25 +1253,15 @@
     ],
     "description": "カレー店巡りにも使えるエリア",
     "url": "https://www.google.com/search?q=%E7%A5%9E%E4%BF%9D%E7%94%BA%E3%82%AB%E3%83%AC%E3%83%BC%E3%82%A8%E3%83%AA%E3%82%A2%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
-  },
-  {
-    "id": 99,
-    "name": "曙橋駅周辺",
-    "lat": 35.6924,
-    "lng": 139.723,
-    "time": 60,
-    "segment": [
-      "街歩き",
-      "ローカル",
-      "坂道"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "街歩き"
     ],
-    "description": "市ヶ谷西側へ歩くローカル散歩",
-    "url": "https://www.google.com/search?q=%E6%9B%99%E6%A9%8B%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "campusDistanceKm": 1.66
   },
   {
-    "id": 100,
+    "id": 53,
     "name": "荒木町",
     "lat": 35.6896,
     "lng": 139.7244,
@@ -1810,14 +1273,165 @@
     ],
     "description": "小さな飲食店が多い落ち着いた街",
     "url": "https://www.google.com/search?q=%E8%8D%92%E6%9C%A8%E7%94%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
-    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。"
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 1.5
+  },
+  {
+    "id": 54,
+    "name": "曙橋駅周辺",
+    "lat": 35.6924,
+    "lng": 139.723,
+    "time": 60,
+    "segment": [
+      "街歩き",
+      "ローカル",
+      "坂道"
+    ],
+    "description": "市ヶ谷西側へ歩くローカル散歩",
+    "url": "https://www.google.com/search?q=%E6%9B%99%E6%A9%8B%E9%A7%85%E5%91%A8%E8%BE%BA%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "街歩き"
+    ],
+    "campusDistanceKm": 1.53
+  },
+  {
+    "id": 55,
+    "name": "PAUL 神楽坂店",
+    "lat": 35.7021,
+    "lng": 139.7416,
+    "time": 30,
+    "segment": [
+      "カフェ",
+      "パン",
+      "神楽坂"
+    ],
+    "description": "散歩中の軽食に使いやすい",
+    "url": "https://www.pasconet.co.jp/paul/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.82
+  },
+  {
+    "id": 56,
+    "name": "あかぎカフェ",
+    "lat": 35.7048,
+    "lng": 139.7358,
+    "time": 45,
+    "segment": [
+      "カフェ",
+      "神社",
+      "デート"
+    ],
+    "description": "赤城神社境内のカフェ",
+    "url": "https://www.akagi-cafe.jp/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "歴史"
+    ],
+    "campusDistanceKm": 1.16
+  },
+  {
+    "id": 57,
+    "name": "トンボロ 神楽坂",
+    "lat": 35.703,
+    "lng": 139.7392,
+    "time": 45,
+    "segment": [
+      "カフェ",
+      "静か",
+      "神楽坂"
+    ],
+    "description": "落ち着いた喫茶店系の休憩候補",
+    "url": "https://www.google.com/search?q=%E3%83%88%E3%83%B3%E3%83%9C%E3%83%AD%20%E7%A5%9E%E6%A5%BD%E5%9D%82%20%E6%9D%B1%E4%BA%AC%20%E5%85%AC%E5%BC%8F",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.9
+  },
+  {
+    "id": 58,
+    "name": "アトリエコータ 神楽坂",
+    "lat": 35.7028,
+    "lng": 139.7383,
+    "time": 45,
+    "segment": [
+      "カフェ",
+      "スイーツ",
+      "デート"
+    ],
+    "description": "スイーツ好き向け",
+    "url": "https://www.atelierkohta.com/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.89
+  },
+  {
+    "id": 59,
+    "name": "ロイヤルガーデンカフェ 飯田橋",
+    "lat": 35.6994,
+    "lng": 139.7434,
+    "time": 30,
+    "segment": [
+      "カフェ",
+      "デート",
+      "サクラテラス"
+    ],
+    "description": "飯田橋サクラテラス内の休憩候補",
+    "url": "https://royal-gardencafe.com/iidabashi/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "デート",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.6
+  },
+  {
+    "id": 60,
+    "name": "スターバックス 飯田橋サクラテラス店",
+    "lat": 35.6994,
+    "lng": 139.7434,
+    "time": 30,
+    "segment": [
+      "カフェ",
+      "作業",
+      "休憩"
+    ],
+    "description": "安定して使いやすいチェーンカフェ",
+    "url": "https://store.starbucks.co.jp/detail-1259/",
+    "coordinateNote": "MVP用に入口・道路沿い・最寄り歩道付近へ寄せた座標です。",
+    "mvpCategories": [
+      "グルメ",
+      "街歩き"
+    ],
+    "campusDistanceKm": 0.6
   }
 ];
 
     const map = L.map("map").setView([START_POINT.lat, START_POINT.lng], 14);
-
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
+      maxZoom: 18,
+      keepBuffer: 1,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
@@ -1843,7 +1457,7 @@
     function popupHtml(place) {
       return `
         <strong>${place.name}</strong><br>
-        <span>${place.description || ""}</span><br><small>${place.coordinateNote || ""}</small><br>
+        <span>${place.description || ""}</span><br>
         <a href="${place.url}" target="_blank" rel="noopener noreferrer">詳細を見る</a>
       `;
     }
@@ -1858,21 +1472,20 @@
       return 2 * R * Math.asin(Math.sqrt(x));
     }
 
+    function estimateWalkingMinutes(points) {
+      let total = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        total += distanceKm(points[i], points[i + 1]);
+      }
+      // 直線距離だけだと短く出るため、都市部の道なり補正として1.28倍する。
+      return (total * 1.28) / 4.5 * 60;
+    }
+
     function shuffle(array) {
       return [...array].sort(() => Math.random() - 0.5);
     }
 
-    function estimateWalkingMinutesForRoute(routeSpots) {
-      // 候補選びは軽くするため直線距離で概算する。
-      // 実際の表示ではOSRMで道なりルートを取得し、正確な徒歩時間に近い値を表示する。
-      const routePoints = [START_POINT, ...routeSpots, START_POINT];
-      const straightKm = estimateDistance(routePoints);
-      const roadFactor = 1.35; // 道なりになる分の余裕
-      const walkingSpeedKmH = 4.5;
-      return (straightKm * roadFactor) / walkingSpeedKmH * 60;
-    }
-
-    function orderSpotsByNearestNeighbor(selected) {
+    function orderSmart(selected) {
       const remaining = [...selected];
       const ordered = [];
       let current = START_POINT;
@@ -1883,208 +1496,94 @@
         ordered.push(next);
         current = next;
       }
-
       return ordered;
     }
 
-    function getStopRangeByTargetMinutes(targetMinutes, spotCountMode) {
-      let base;
-
-      if (targetMinutes <= 15) base = { min: 1, max: 2 };
-      else if (targetMinutes <= 30) base = { min: 1, max: 3 };
-      else if (targetMinutes <= 45) base = { min: 2, max: 4 };
-      else if (targetMinutes <= 60) base = { min: 2, max: 5 };
-      else if (targetMinutes <= 90) base = { min: 3, max: 7 };
-      else base = { min: 4, max: 9 };
-
-      if (spotCountMode === "few") {
-        return { min: Math.max(1, base.min - 1), max: Math.max(base.min, base.max - 2) };
+    function getDesiredCount(targetMin, density) {
+      if (density === "few") {
+        if (targetMin <= 15) return 1;
+        if (targetMin <= 30) return 1;
+        if (targetMin <= 45) return 2;
+        return 2;
       }
-
-      if (spotCountMode === "many") {
-        return { min: base.min + 1, max: base.max + 1 };
+      if (density === "many") {
+        if (targetMin <= 15) return 2;
+        if (targetMin <= 30) return 3;
+        if (targetMin <= 45) return 4;
+        return 4;
       }
-
-      return base;
+      if (targetMin <= 15) return 1;
+      if (targetMin <= 30) return 2;
+      if (targetMin <= 45) return 3;
+      return 3;
     }
 
-    function chooseCandidatePool(segment) {
-      let candidates = [...spots];
-
-      if (segment !== "完全ランダム") {
-        const matched = candidates.filter(s => s.segment.includes(segment));
-        // セグメント一致が少なすぎるとルート時間を合わせにくいので、その場合は全体から補完する。
-        if (matched.length >= 5) candidates = matched;
-      }
-
-      return candidates;
+    function getCandidates(segment) {
+      if (segment === "完全ランダム") return [...spots];
+      return spots.filter(s => s.mvpCategories && s.mvpCategories.includes(segment));
     }
 
-    function selectSpots(segment, targetMinutes, mode, spotCountMode = "auto") {
-      const candidates = chooseCandidatePool(segment);
-      const stopRange = getStopRangeByTargetMinutes(targetMinutes, spotCountMode);
-      const attempts = 700;
-      let bestRoute = [];
-      let bestScore = Infinity;
-      let bestEstimate = 0;
+    function buildRouteCandidate(candidates, targetMin, density, mode) {
+      const desiredCount = getDesiredCount(targetMin, density);
+      const shuffled = shuffle(candidates);
+      const selected = shuffled.slice(0, Math.min(desiredCount, shuffled.length));
+      const ordered = mode === "smart" ? orderSmart(selected) : selected;
+      return ordered;
+    }
 
-      for (let attempt = 0; attempt < attempts; attempt++) {
-        const stopCount = Math.min(
-          candidates.length,
-          stopRange.min + Math.floor(Math.random() * (stopRange.max - stopRange.min + 1))
-        );
+    function scoreRoute(route, targetMin) {
+      const points = [START_POINT, ...route, START_POINT];
+      const estimatedMin = estimateWalkingMinutes(points);
+      const timeDiff = Math.abs(estimatedMin - targetMin);
+      const categoryBonus = route.length * 0.5;
+      return { estimatedMin, score: timeDiff - categoryBonus };
+    }
 
-        let selected = shuffle(candidates).slice(0, stopCount);
+    function selectBestRoute(segment, targetMin, density, mode) {
+      let candidates = getCandidates(segment);
 
-        if (mode === "smart") {
-          selected = orderSpotsByNearestNeighbor(selected);
-        }
+      if (candidates.length === 0) candidates = [...spots];
 
-        const estimatedMinutes = estimateWalkingMinutesForRoute(selected);
-        const diff = Math.abs(estimatedMinutes - targetMinutes);
+      // 目標時間に合いやすくするため、近すぎ/遠すぎの候補をざっくり調整。
+      // 15分は近場中心、60分は少し広めも混ぜる。
+      const maxOneWay = targetMin <= 15 ? 0.9 : targetMin <= 30 ? 1.5 : targetMin <= 45 ? 2.2 : 3.2;
+      const distanceFiltered = candidates.filter(s => distanceKm(START_POINT, s) <= maxOneWay);
+      if (distanceFiltered.length >= getDesiredCount(targetMin, density)) {
+        candidates = distanceFiltered;
+      }
 
-        // 目標を大きく超えるより、少し短い方が体験として安全なので軽くペナルティを入れる。
-        const overPenalty = estimatedMinutes > targetMinutes ? (estimatedMinutes - targetMinutes) * 0.25 : 0;
-        const score = diff + overPenalty;
+      let best = null;
+      const trials = 80;
 
-        if (score < bestScore) {
-          bestScore = score;
-          bestRoute = selected;
-          bestEstimate = estimatedMinutes;
+      for (let i = 0; i < trials; i++) {
+        const route = buildRouteCandidate(candidates, targetMin, density, mode);
+        if (route.length === 0) continue;
+        const scored = scoreRoute(route, targetMin);
+        if (!best || scored.score < best.score) {
+          best = { route, ...scored };
         }
       }
 
-      // ルートカード表示用。実際の道なり計算後はOSRMの値で上書き表示される。
-      bestRoute.estimatedWalkingMinutes = bestEstimate;
-      return bestRoute;
+      return best || { route: candidates.slice(0, 1), estimatedMin: 0, score: 999 };
     }
-
-    async function fetchRouteGeometry(points) {
-      const coords = points.map(p => `${p.lng},${p.lat}`).join(";");
-      const base = "https://router.project-osrm.org/route/v1";
-
-      // スマホ安定化：
-      // 以前は区間ごとに何度もAPIを叩いていましたが、ここでは全ルートを1回で取得します。
-      // OSRM公開サーバーは基本的にdrivingが安定しているため、道なり表示はdrivingで取得します。
-      // 徒歩専用ではありませんが、「道路に沿った道なりの線」を安定して出すためのMVP仕様です。
-      const query = `${coords}?overview=false&steps=true&geometries=geojson`;
-
-      async function fetchWithTimeout(url, ms = 7000) {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), ms);
-
-        try {
-          const res = await fetch(url, { signal: controller.signal });
-          clearTimeout(timer);
-          return res;
-        } catch (e) {
-          clearTimeout(timer);
-          throw e;
-        }
-      }
-
-      try {
-        const res = await fetchWithTimeout(`${base}/driving/${query}`, 7000);
-        if (!res.ok) throw new Error(`OSRM error: ${res.status}`);
-
-        const data = await res.json();
-        const route = data.routes && data.routes[0];
-        if (!route || !route.legs) throw new Error("OSRM route not found");
-
-        const legs = route.legs.map((leg, legIndex) => {
-          const coordinates = [];
-
-          leg.steps.forEach(step => {
-            if (step.geometry && step.geometry.coordinates) {
-              step.geometry.coordinates.forEach(c => {
-                coordinates.push([c[1], c[0]]);
-              });
-            }
-          });
-
-          // 念のため、ステップ座標が取れない時は直線に戻す。
-          if (coordinates.length < 2) {
-            coordinates.push(
-              [points[legIndex].lat, points[legIndex].lng],
-              [points[legIndex + 1].lat, points[legIndex + 1].lng]
-            );
-          }
-
-          return {
-            coordinates,
-            distanceKm: leg.distance / 1000,
-            durationMin: leg.duration / 60
-          };
-        });
-
-        return {
-          legs,
-          coordinates: legs.flatMap(leg => leg.coordinates),
-          distanceKm: route.distance / 1000,
-          durationMin: route.duration / 60,
-          profile: "driving-single"
-        };
-      } catch (e) {
-        console.warn("single route fetch failed", e);
-
-        // 失敗時でも何も表示されない状態を避ける。
-        const fallbackLegs = [];
-        let totalDistance = 0;
-
-        for (let i = 0; i < points.length - 1; i++) {
-          const d = distanceKm(points[i], points[i + 1]);
-          totalDistance += d;
-          fallbackLegs.push({
-            coordinates: [
-              [points[i].lat, points[i].lng],
-              [points[i + 1].lat, points[i + 1].lng]
-            ],
-            distanceKm: d,
-            durationMin: d / 4.5 * 60
-          });
-        }
-
-        return {
-          legs: fallbackLegs,
-          coordinates: fallbackLegs.flatMap(leg => leg.coordinates),
-          distanceKm: totalDistance,
-          durationMin: totalDistance / 4.5 * 60,
-          profile: "straight"
-        };
-      }
-    }
-
-
-    async function fetchSegmentRoute(from, to) {
-      const result = await fetchRouteGeometry([from, to]);
-      return result;
-    }
-
 
     function bearingDegrees(fromLatLng, toLatLng) {
       const lat1 = fromLatLng[0] * Math.PI / 180;
       const lat2 = toLatLng[0] * Math.PI / 180;
       const dLng = (toLatLng[1] - fromLatLng[1]) * Math.PI / 180;
-
       const y = Math.sin(dLng) * Math.cos(lat2);
-      const x = Math.cos(lat1) * Math.sin(lat2) -
-                Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-
+      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
       return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
     }
 
     function addDirectionArrows(coordinates, color, label) {
       if (!coordinates || coordinates.length < 2) return;
 
-      // 線の途中に矢印を置く。
-      // その地点から少し先の座標を見て、実際に進む方角へ矢印の先端を向ける。
       const arrowCount = Math.min(2, Math.max(1, Math.floor(coordinates.length / 120)));
       const step = Math.floor(coordinates.length / (arrowCount + 1));
 
       for (let i = 1; i <= arrowCount; i++) {
         const index = Math.min(coordinates.length - 3, Math.max(1, step * i));
-
-        // その場所に立った時、数歩先へ進む方向を見る。
         const current = coordinates[index];
         const ahead = coordinates[Math.min(coordinates.length - 1, index + 2)];
         const angle = bearingDegrees(current, ahead);
@@ -2100,9 +1599,90 @@
           iconAnchor: [14, 14]
         });
 
-        L.marker(current, { icon, interactive: false })
-          .bindTooltip(label, { permanent: false, direction: "top" })
-          .addTo(routeLayer);
+        L.marker(current, { icon, interactive: false }).bindTooltip(label).addTo(routeLayer);
+      }
+    }
+
+    async function fetchRouteGeometry(points) {
+      const coords = points.map(p => `${p.lng},${p.lat}`).join(";");
+      const base = "https://router.project-osrm.org/route/v1";
+      // 1回で全体ルートを取得して、スマホでも道なり線が出やすくする。
+      const query = `${coords}?overview=false&steps=true&geometries=geojson`;
+
+      async function fetchWithTimeout(url, ms = 7000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), ms);
+        try {
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (e) {
+          clearTimeout(timer);
+          throw e;
+        }
+      }
+
+      try {
+        const res = await fetchWithTimeout(`${base}/driving/${query}`, 7000);
+        if (!res.ok) throw new Error(`OSRM error: ${res.status}`);
+        const data = await res.json();
+        const route = data.routes && data.routes[0];
+        if (!route || !route.legs) throw new Error("OSRM route not found");
+
+        const legs = route.legs.map((leg, legIndex) => {
+          const coordinates = [];
+          leg.steps.forEach(step => {
+            if (step.geometry && step.geometry.coordinates) {
+              step.geometry.coordinates.forEach(c => coordinates.push([c[1], c[0]]));
+            }
+          });
+
+          if (coordinates.length < 2) {
+            coordinates.push(
+              [points[legIndex].lat, points[legIndex].lng],
+              [points[legIndex + 1].lat, points[legIndex + 1].lng]
+            );
+          }
+
+          return {
+            coordinates,
+            distanceKm: leg.distance / 1000,
+            durationMin: leg.duration / 60
+          };
+        });
+
+        // OSRM driving のdurationは徒歩ではないため、徒歩時間は距離から再計算する。
+        const walkingDurationMin = (route.distance / 1000) / 4.5 * 60;
+
+        return {
+          legs,
+          coordinates: legs.flatMap(leg => leg.coordinates),
+          distanceKm: route.distance / 1000,
+          durationMin: walkingDurationMin,
+          profile: "road"
+        };
+      } catch (e) {
+        console.warn("route fetch failed", e);
+
+        const fallbackLegs = [];
+        let totalDistance = 0;
+        for (let i = 0; i < points.length - 1; i++) {
+          const d = distanceKm(points[i], points[i + 1]) * 1.28;
+          totalDistance += d;
+          fallbackLegs.push({
+            coordinates: [[points[i].lat, points[i].lng], [points[i + 1].lat, points[i + 1].lng]],
+            distanceKm: d,
+            durationMin: d / 4.5 * 60
+          });
+        }
+
+        return {
+          legs: fallbackLegs,
+          coordinates: fallbackLegs.flatMap(leg => leg.coordinates),
+          distanceKm: totalDistance,
+          durationMin: totalDistance / 4.5 * 60,
+          profile: "straight"
+        };
       }
     }
 
@@ -2125,25 +1705,13 @@
         .bindPopup(isReturn ? "帰り：最後のスポット → 法政大学" : `行き：${from.name} → ${to.name}`)
         .addTo(routeLayer);
 
-        addDirectionArrows(
-          leg.coordinates,
-          lineColor,
-          isReturn ? "帰りの方向" : "行きの方向"
-        );
+        addDirectionArrows(leg.coordinates, lineColor, isReturn ? "帰りの方向" : "行きの方向");
       });
 
       return route;
     }
 
-    function estimateDistance(points) {
-      let total = 0;
-      for (let i = 0; i < points.length - 1; i++) {
-        total += distanceKm(points[i], points[i + 1]);
-      }
-      return total;
-    }
-
-    async function drawRoute(selected) {
+    async function drawRoute(selected, targetMin, estimatedMin) {
       markerLayer.clearLayers();
       routeLayer.clearLayers();
 
@@ -2155,7 +1723,7 @@
 
       selected.forEach((spot, index) => {
         L.marker([spot.lat, spot.lng], { icon: numberedIcon(index + 1) })
-          .bindPopup(`<strong>${index + 1}. ${spot.name}</strong><br>${spot.description}<br><small>${spot.coordinateNote || ""}</small><br><a href="${spot.url}" target="_blank" rel="noopener noreferrer">詳細を見る</a>`)
+          .bindPopup(`<strong>${index + 1}. ${spot.name}</strong><br>${spot.description}<br><a href="${spot.url}" target="_blank" rel="noopener noreferrer">詳細を見る</a>`)
           .addTo(markerLayer);
       });
 
@@ -2166,27 +1734,25 @@
         map.fitBounds(bounds, { padding: [30, 30] });
       }
 
-      renderRouteCard(selected, route);
+      renderRouteCard(selected, route, targetMin, estimatedMin);
     }
 
-    function renderRouteCard(selected, route) {
+    function renderRouteCard(selected, route, targetMin, estimatedMin) {
       const segment = document.getElementById("segmentSelect").value;
-      const targetMinutes = Number(document.getElementById("timeSelect").value);
-      const profileText = route.profile === "driving-single" ? "道なり表示" : "道なり取得失敗のため簡易表示";
-      const actualMinutes = Math.round(route.durationMin);
-      const diffMinutes = actualMinutes - targetMinutes;
-      const diffText = diffMinutes === 0
-        ? "目標ぴったり"
-        : diffMinutes > 0
-          ? `目標より約${diffMinutes}分長め`
-          : `目標より約${Math.abs(diffMinutes)}分短め`;
+      const actualMin = Math.round(route.durationMin);
+      const diff = actualMin - targetMin;
+      const diffText = diff === 0 ? "目標ぴったり" : diff > 0 ? `目標より約${diff}分長め` : `目標より約${Math.abs(diff)}分短め`;
+      const profileText = route.profile === "road" ? "道なり表示" : "道なり取得失敗のため簡易表示";
 
       const outboundHtml = selected.map((s, i) => `
         <div class="spot-row">
           <div>
             <div class="spot-name">${i + 1}. ${s.name}</div>
             <div class="spot-desc">${s.description}</div>
-            <div class="chips">${s.segment.map(tag => `<span class="chip">${tag}</span>`).join("")}</div>
+            <div class="chips">
+              ${(s.mvpCategories || []).map(tag => `<span class="chip">${tag}</span>`).join("")}
+              <span class="chip">法政から約${s.campusDistanceKm}km</span>
+            </div>
           </div>
           <a href="${s.url}" target="_blank" rel="noopener noreferrer">詳細</a>
         </div>
@@ -2197,22 +1763,22 @@
         <div class="spot-row">
           <div>
             <div class="spot-name">帰り：${lastSpot ? lastSpot.name : "最後のスポット"} → 法政大学 富士見校舎</div>
-            <div class="spot-desc">滞在時間は含めず、徒歩時間だけを合計しています。地図上では青の点線で表示しています。</div>
+            <div class="spot-desc">地図上では青の点線で表示しています。</div>
           </div>
           <a href="${START_POINT.url}" target="_blank" rel="noopener noreferrer">法政</a>
         </div>
       `;
 
       document.getElementById("routeCard").innerHTML = `
-        <p class="route-title">${segment}・合計${targetMinutes}分さんぽルート</p>
+        <p class="route-title">${segment}・約${targetMin}分さんぽ</p>
         <p class="muted">
-          徒歩時間の目安：約${actualMinutes}分（${diffText}） / 距離：約${route.distanceKm.toFixed(1)}km / 表示方式：${profileText}<br>
-          条件：滞在時間は含めない・法政大学 富士見校舎スタート＆ゴール・経由${selected.length}か所
+          実際の目安：${route.distanceKm.toFixed(1)}km / 約${actualMin}分（${diffText}） / ${profileText}<br>
+          滞在時間は含めず、歩行時間だけで計算しています。
         </p>
         <div class="legend">
           <span class="legend-item"><span class="line-sample go-line"></span>行き：緑の線＋矢印</span>
           <span class="legend-item"><span class="line-sample back-line"></span>帰り：青の点線＋矢印</span>
-          <span class="legend-item">番号順に歩く</span>
+          <span class="legend-item">半径4km以内の候補から生成</span>
         </div>
 
         <div class="route-section-title">行きのルート：法政大学 → スポット</div>
@@ -2222,23 +1788,26 @@
         <div class="spots-list">${returnHtml}</div>
 
         <p class="muted" style="margin-top:12px;">
-          魅力：歩きたい合計時間に近いルートを自動で作ります。線上の三角矢印の先端が、その地点から進む方角を示します。<br>
-          注意点：表示時間は徒歩時間の目安です。カフェ・神社・公園などでの滞在時間は含めていません。スマホでも道なり表示が出やすいように、全体ルートを1回で取得しています。飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
+          注意点：表示時間は徒歩時間の目安です。カフェ・神社・公園などでの滞在時間は含めていません。飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
         </p>
       `;
     }
 
     async function generateRoute() {
       const loadingBox = document.getElementById("loadingBox");
-      if (loadingBox) loadingBox.classList.add("show");
+      if (loadingBox) {
+        loadingBox.textContent = "目標時間に近い道なりルートを取得中です。スマホでは数秒かかることがあります。";
+        loadingBox.classList.add("show");
+      }
 
       try {
         const segment = document.getElementById("segmentSelect").value;
-        const targetMinutes = Number(document.getElementById("timeSelect").value);
+        const targetMin = Number(document.getElementById("timeSelect").value);
+        const density = document.getElementById("densitySelect").value;
         const mode = document.getElementById("modeSelect").value;
-        const spotCountMode = document.getElementById("spotCountModeSelect").value;
-        const selected = selectSpots(segment, targetMinutes, mode, spotCountMode);
-        await drawRoute(selected);
+
+        const best = selectBestRoute(segment, targetMin, density, mode);
+        await drawRoute(best.route, targetMin, best.estimatedMin);
       } finally {
         if (loadingBox) loadingBox.classList.remove("show");
       }
@@ -2250,7 +1819,7 @@
       generateRoute();
     }
 
-    // 初期表示は軽くする。ルート計算は「ルートを作る」を押してから行う。
+    // 初期表示は軽くする。スマホでの初回ロード時にルートAPIを叩かない。
     L.marker([START_POINT.lat, START_POINT.lng], { icon: startIcon })
       .bindPopup(popupHtml(START_POINT))
       .addTo(markerLayer);
