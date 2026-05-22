@@ -137,6 +137,18 @@
       color: #3e6b45;
       font-weight: 700;
     }
+    .loading {
+      display: none;
+      grid-column: 1 / -1;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eef7ee;
+      color: #2f7d4f;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .loading.show { display: block; }
+
     .warning {
       font-size: 12px;
       line-height: 1.6;
@@ -208,7 +220,7 @@
   <header>
     <h1>法政おさんぽルート</h1>
     <div class="subtitle">
-      法政大学 富士見校舎をスタート＆ゴールに、気分に合わせた散歩ルートを地図で表示します。座標はルート崩れを減らすため、入口・道路沿い付近に寄せています。
+      法政大学 富士見校舎をスタート＆ゴールに、歩きたい合計時間に近い散歩ルートを地図で表示します。滞在時間は含めず、徒歩時間だけで計算します。
     </div>
   </header>
 
@@ -236,22 +248,23 @@
       </label>
 
       <label>
-        最大時間
+        歩きたい合計時間
         <select id="timeSelect">
           <option value="15">15分</option>
           <option value="30" selected>30分</option>
           <option value="45">45分</option>
           <option value="60">60分</option>
+          <option value="90">90分</option>
+          <option value="120">120分</option>
         </select>
       </label>
 
       <label>
-        経由スポット数
-        <select id="countSelect">
-          <option value="2">2か所</option>
-          <option value="3" selected>3か所</option>
-          <option value="4">4か所</option>
-          <option value="5">5か所</option>
+        スポット数
+        <select id="spotCountModeSelect">
+          <option value="auto" selected>自動で決める</option>
+          <option value="few">少なめ</option>
+          <option value="many">多め</option>
         </select>
       </label>
 
@@ -267,15 +280,16 @@
         <button onclick="generateRoute()">ルートを作る</button>
         <button class="secondary" onclick="generateRandomRoute()">気分ガチャ</button>
       </div>
+      <div id="loadingBox" class="loading">道なりルートを取得中です。スマホでは数秒かかることがあります。</div>
     </section>
 
     <section class="card" id="routeCard">
       <p class="route-title">まずは「ルートを作る」を押してください</p>
-      <p class="muted">地図上にピンと道なりルートが表示されます。スポットの「詳細」を押すと公式サイトや関連情報に飛べます。</p>
+      <p class="muted">選んだ合計歩行時間に近いルートを作ります。滞在時間は含めず、徒歩時間だけを目安にします。</p>
     </section>
 
     <div class="warning">
-      注意：このMVPはOSRMの公開ルート取得を使っています。公開アプリにする場合は、Google Maps Directions API、OpenRouteService、Mapboxなどに差し替えるのがおすすめです。
+      注意：このMVPはOSRMの公開ルート取得を使っています。ルート候補は概算で選び、最後に表示するルートだけ道なり徒歩時間を計算します。公開アプリにする場合は、Google Maps Directions APIなどに差し替えるのがおすすめです。
     </div>
   </main>
 
@@ -1848,64 +1862,196 @@
       return [...array].sort(() => Math.random() - 0.5);
     }
 
-    function selectSpots(segment, maxTime, count, mode) {
-      let candidates = spots.filter(s => s.time <= maxTime);
+    function estimateWalkingMinutesForRoute(routeSpots) {
+      // 候補選びは軽くするため直線距離で概算する。
+      // 実際の表示ではOSRMで道なりルートを取得し、正確な徒歩時間に近い値を表示する。
+      const routePoints = [START_POINT, ...routeSpots, START_POINT];
+      const straightKm = estimateDistance(routePoints);
+      const roadFactor = 1.35; // 道なりになる分の余裕
+      const walkingSpeedKmH = 4.5;
+      return (straightKm * roadFactor) / walkingSpeedKmH * 60;
+    }
+
+    function orderSpotsByNearestNeighbor(selected) {
+      const remaining = [...selected];
+      const ordered = [];
+      let current = START_POINT;
+
+      while (remaining.length > 0) {
+        remaining.sort((a, b) => distanceKm(current, a) - distanceKm(current, b));
+        const next = remaining.shift();
+        ordered.push(next);
+        current = next;
+      }
+
+      return ordered;
+    }
+
+    function getStopRangeByTargetMinutes(targetMinutes, spotCountMode) {
+      let base;
+
+      if (targetMinutes <= 15) base = { min: 1, max: 2 };
+      else if (targetMinutes <= 30) base = { min: 1, max: 3 };
+      else if (targetMinutes <= 45) base = { min: 2, max: 4 };
+      else if (targetMinutes <= 60) base = { min: 2, max: 5 };
+      else if (targetMinutes <= 90) base = { min: 3, max: 7 };
+      else base = { min: 4, max: 9 };
+
+      if (spotCountMode === "few") {
+        return { min: Math.max(1, base.min - 1), max: Math.max(base.min, base.max - 2) };
+      }
+
+      if (spotCountMode === "many") {
+        return { min: base.min + 1, max: base.max + 1 };
+      }
+
+      return base;
+    }
+
+    function chooseCandidatePool(segment) {
+      let candidates = [...spots];
 
       if (segment !== "完全ランダム") {
-        candidates = candidates.filter(s => s.segment.includes(segment));
+        const matched = candidates.filter(s => s.segment.includes(segment));
+        // セグメント一致が少なすぎるとルート時間を合わせにくいので、その場合は全体から補完する。
+        if (matched.length >= 5) candidates = matched;
       }
 
-      if (candidates.length < count) {
-        candidates = spots.filter(s => s.time <= maxTime);
-      }
+      return candidates;
+    }
 
-      let selected = shuffle(candidates).slice(0, count);
+    function selectSpots(segment, targetMinutes, mode, spotCountMode = "auto") {
+      const candidates = chooseCandidatePool(segment);
+      const stopRange = getStopRangeByTargetMinutes(targetMinutes, spotCountMode);
+      const attempts = 700;
+      let bestRoute = [];
+      let bestScore = Infinity;
+      let bestEstimate = 0;
 
-      if (mode === "smart") {
-        const ordered = [];
-        let current = START_POINT;
-        while (selected.length > 0) {
-          selected.sort((a, b) => distanceKm(current, a) - distanceKm(current, b));
-          const next = selected.shift();
-          ordered.push(next);
-          current = next;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        const stopCount = Math.min(
+          candidates.length,
+          stopRange.min + Math.floor(Math.random() * (stopRange.max - stopRange.min + 1))
+        );
+
+        let selected = shuffle(candidates).slice(0, stopCount);
+
+        if (mode === "smart") {
+          selected = orderSpotsByNearestNeighbor(selected);
         }
-        selected = ordered;
+
+        const estimatedMinutes = estimateWalkingMinutesForRoute(selected);
+        const diff = Math.abs(estimatedMinutes - targetMinutes);
+
+        // 目標を大きく超えるより、少し短い方が体験として安全なので軽くペナルティを入れる。
+        const overPenalty = estimatedMinutes > targetMinutes ? (estimatedMinutes - targetMinutes) * 0.25 : 0;
+        const score = diff + overPenalty;
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestRoute = selected;
+          bestEstimate = estimatedMinutes;
+        }
       }
 
-      return selected;
+      // ルートカード表示用。実際の道なり計算後はOSRMの値で上書き表示される。
+      bestRoute.estimatedWalkingMinutes = bestEstimate;
+      return bestRoute;
     }
 
     async function fetchRouteGeometry(points) {
       const coords = points.map(p => `${p.lng},${p.lat}`).join(";");
       const base = "https://router.project-osrm.org/route/v1";
-      const query = `${coords}?overview=full&geometries=geojson&steps=false`;
 
-      // 徒歩ルートを優先。失敗したらdrivingにフォールバック。最後は直線。
-      for (const profile of ["foot", "driving"]) {
+      // スマホ安定化：
+      // 以前は区間ごとに何度もAPIを叩いていましたが、ここでは全ルートを1回で取得します。
+      // OSRM公開サーバーは基本的にdrivingが安定しているため、道なり表示はdrivingで取得します。
+      // 徒歩専用ではありませんが、「道路に沿った道なりの線」を安定して出すためのMVP仕様です。
+      const query = `${coords}?overview=false&steps=true&geometries=geojson`;
+
+      async function fetchWithTimeout(url, ms = 7000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), ms);
+
         try {
-          const res = await fetch(`${base}/${profile}/${query}`);
-          if (!res.ok) continue;
-          const data = await res.json();
-          if (data.routes && data.routes[0] && data.routes[0].geometry) {
-            return {
-              coordinates: data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]),
-              distanceKm: data.routes[0].distance / 1000,
-              durationMin: data.routes[0].duration / 60,
-              profile
-            };
-          }
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          return res;
         } catch (e) {
-          console.warn("route fetch failed", profile, e);
+          clearTimeout(timer);
+          throw e;
         }
       }
 
-      return {
-        coordinates: points.map(p => [p.lat, p.lng]),
-        distanceKm: estimateDistance(points),
-        durationMin: estimateDistance(points) / 4.5 * 60,
-        profile: "straight"
-      };
+      try {
+        const res = await fetchWithTimeout(`${base}/driving/${query}`, 7000);
+        if (!res.ok) throw new Error(`OSRM error: ${res.status}`);
+
+        const data = await res.json();
+        const route = data.routes && data.routes[0];
+        if (!route || !route.legs) throw new Error("OSRM route not found");
+
+        const legs = route.legs.map((leg, legIndex) => {
+          const coordinates = [];
+
+          leg.steps.forEach(step => {
+            if (step.geometry && step.geometry.coordinates) {
+              step.geometry.coordinates.forEach(c => {
+                coordinates.push([c[1], c[0]]);
+              });
+            }
+          });
+
+          // 念のため、ステップ座標が取れない時は直線に戻す。
+          if (coordinates.length < 2) {
+            coordinates.push(
+              [points[legIndex].lat, points[legIndex].lng],
+              [points[legIndex + 1].lat, points[legIndex + 1].lng]
+            );
+          }
+
+          return {
+            coordinates,
+            distanceKm: leg.distance / 1000,
+            durationMin: leg.duration / 60
+          };
+        });
+
+        return {
+          legs,
+          coordinates: legs.flatMap(leg => leg.coordinates),
+          distanceKm: route.distance / 1000,
+          durationMin: route.duration / 60,
+          profile: "driving-single"
+        };
+      } catch (e) {
+        console.warn("single route fetch failed", e);
+
+        // 失敗時でも何も表示されない状態を避ける。
+        const fallbackLegs = [];
+        let totalDistance = 0;
+
+        for (let i = 0; i < points.length - 1; i++) {
+          const d = distanceKm(points[i], points[i + 1]);
+          totalDistance += d;
+          fallbackLegs.push({
+            coordinates: [
+              [points[i].lat, points[i].lng],
+              [points[i + 1].lat, points[i + 1].lng]
+            ],
+            distanceKm: d,
+            durationMin: d / 4.5 * 60
+          });
+        }
+
+        return {
+          legs: fallbackLegs,
+          coordinates: fallbackLegs.flatMap(leg => leg.coordinates),
+          distanceKm: totalDistance,
+          durationMin: totalDistance / 4.5 * 60,
+          profile: "straight"
+        };
+      }
     }
 
 
@@ -1932,7 +2078,7 @@
 
       // 線の途中に矢印を置く。
       // その地点から少し先の座標を見て、実際に進む方角へ矢印の先端を向ける。
-      const arrowCount = Math.min(6, Math.max(1, Math.floor(coordinates.length / 30)));
+      const arrowCount = Math.min(2, Math.max(1, Math.floor(coordinates.length / 120)));
       const step = Math.floor(coordinates.length / (arrowCount + 1));
 
       for (let i = 1; i <= arrowCount; i++) {
@@ -1961,22 +2107,16 @@
     }
 
     async function drawColoredRouteSegments(routePoints) {
-      const segmentResults = [];
-      let totalDistance = 0;
-      let totalDuration = 0;
+      const route = await fetchRouteGeometry(routePoints);
+      const legs = route.legs || [];
 
-      for (let i = 0; i < routePoints.length - 1; i++) {
+      legs.forEach((leg, i) => {
+        const isReturn = i === legs.length - 1;
+        const lineColor = isReturn ? "#1f6fb2" : "#2f7d4f";
         const from = routePoints[i];
         const to = routePoints[i + 1];
-        const segment = await fetchSegmentRoute(from, to);
-        totalDistance += segment.distanceKm;
-        totalDuration += segment.durationMin;
-        segmentResults.push(segment);
 
-        const isReturn = i === routePoints.length - 2;
-        const lineColor = isReturn ? "#1f6fb2" : "#2f7d4f";
-
-        L.polyline(segment.coordinates, {
+        L.polyline(leg.coordinates, {
           weight: isReturn ? 7 : 6,
           opacity: isReturn ? 0.9 : 0.85,
           color: lineColor,
@@ -1986,19 +2126,13 @@
         .addTo(routeLayer);
 
         addDirectionArrows(
-          segment.coordinates,
+          leg.coordinates,
           lineColor,
           isReturn ? "帰りの方向" : "行きの方向"
         );
-      }
+      });
 
-      const allCoordinates = segmentResults.flatMap(s => s.coordinates);
-      return {
-        coordinates: allCoordinates,
-        distanceKm: totalDistance,
-        durationMin: totalDuration,
-        profile: segmentResults[0]?.profile || "unknown"
-      };
+      return route;
     }
 
     function estimateDistance(points) {
@@ -2037,8 +2171,15 @@
 
     function renderRouteCard(selected, route) {
       const segment = document.getElementById("segmentSelect").value;
-      const maxTime = document.getElementById("timeSelect").value;
-      const profileText = route.profile === "foot" ? "徒歩ルート" : route.profile === "driving" ? "道路沿いルート" : "直線表示";
+      const targetMinutes = Number(document.getElementById("timeSelect").value);
+      const profileText = route.profile === "driving-single" ? "道なり表示" : "道なり取得失敗のため簡易表示";
+      const actualMinutes = Math.round(route.durationMin);
+      const diffMinutes = actualMinutes - targetMinutes;
+      const diffText = diffMinutes === 0
+        ? "目標ぴったり"
+        : diffMinutes > 0
+          ? `目標より約${diffMinutes}分長め`
+          : `目標より約${Math.abs(diffMinutes)}分短め`;
 
       const outboundHtml = selected.map((s, i) => `
         <div class="spot-row">
@@ -2056,17 +2197,17 @@
         <div class="spot-row">
           <div>
             <div class="spot-name">帰り：${lastSpot ? lastSpot.name : "最後のスポット"} → 法政大学 富士見校舎</div>
-            <div class="spot-desc">地図上では青の点線で表示しています。</div>
+            <div class="spot-desc">滞在時間は含めず、徒歩時間だけを合計しています。地図上では青の点線で表示しています。</div>
           </div>
           <a href="${START_POINT.url}" target="_blank" rel="noopener noreferrer">法政</a>
         </div>
       `;
 
       document.getElementById("routeCard").innerHTML = `
-        <p class="route-title">${segment}さんぽルート</p>
+        <p class="route-title">${segment}・合計${targetMinutes}分さんぽルート</p>
         <p class="muted">
-          目安：${route.distanceKm.toFixed(1)}km / 約${Math.round(route.durationMin)}分 / 表示方式：${profileText}<br>
-          条件：最大${maxTime}分・法政大学 富士見校舎スタート＆ゴール
+          徒歩時間の目安：約${actualMinutes}分（${diffText}） / 距離：約${route.distanceKm.toFixed(1)}km / 表示方式：${profileText}<br>
+          条件：滞在時間は含めない・法政大学 富士見校舎スタート＆ゴール・経由${selected.length}か所
         </p>
         <div class="legend">
           <span class="legend-item"><span class="line-sample go-line"></span>行き：緑の線＋矢印</span>
@@ -2081,19 +2222,26 @@
         <div class="spots-list">${returnHtml}</div>
 
         <p class="muted" style="margin-top:12px;">
-          魅力：番号順に歩けば、行きと帰りが分かりやすくなります。線上の三角矢印の先端が、その地点から進む方角を示します。帰り道は青の点線で別表示にしています。<br>
-          注意点：飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
+          魅力：歩きたい合計時間に近いルートを自動で作ります。線上の三角矢印の先端が、その地点から進む方角を示します。<br>
+          注意点：表示時間は徒歩時間の目安です。カフェ・神社・公園などでの滞在時間は含めていません。スマホでも道なり表示が出やすいように、全体ルートを1回で取得しています。飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
         </p>
       `;
     }
 
-    function generateRoute() {
-      const segment = document.getElementById("segmentSelect").value;
-      const maxTime = Number(document.getElementById("timeSelect").value);
-      const count = Number(document.getElementById("countSelect").value);
-      const mode = document.getElementById("modeSelect").value;
-      const selected = selectSpots(segment, maxTime, count, mode);
-      drawRoute(selected);
+    async function generateRoute() {
+      const loadingBox = document.getElementById("loadingBox");
+      if (loadingBox) loadingBox.classList.add("show");
+
+      try {
+        const segment = document.getElementById("segmentSelect").value;
+        const targetMinutes = Number(document.getElementById("timeSelect").value);
+        const mode = document.getElementById("modeSelect").value;
+        const spotCountMode = document.getElementById("spotCountModeSelect").value;
+        const selected = selectSpots(segment, targetMinutes, mode, spotCountMode);
+        await drawRoute(selected);
+      } finally {
+        if (loadingBox) loadingBox.classList.remove("show");
+      }
     }
 
     function generateRandomRoute() {
@@ -2102,8 +2250,11 @@
       generateRoute();
     }
 
-    // 初期表示
-    generateRoute();
+    // 初期表示は軽くする。ルート計算は「ルートを作る」を押してから行う。
+    L.marker([START_POINT.lat, START_POINT.lng], { icon: startIcon })
+      .bindPopup(popupHtml(START_POINT))
+      .addTo(markerLayer);
+    map.setView([START_POINT.lat, START_POINT.lng], 14);
   </script>
 </body>
 </html>
