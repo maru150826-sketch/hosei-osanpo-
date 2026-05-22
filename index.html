@@ -197,6 +197,21 @@
       font-size: 14px;
     }
 
+
+    .loading {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #eef7ee;
+      color: #2f7d4f;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .loading.show {
+      display: block;
+    }
+
     @media (max-width: 640px) {
       #map { height: 46vh; min-height: 320px; }
       .controls { grid-template-columns: 1fr; }
@@ -263,15 +278,27 @@
         </select>
       </label>
 
+      <label>
+        表示モード
+        <select id="qualitySelect">
+          <option value="light" selected>軽量モード：速い・安定</option>
+          <option value="accurate">高精度モード：道なり優先</option>
+        </select>
+      </label>
+
       <div class="buttons">
         <button onclick="generateRoute()">ルートを作る</button>
         <button class="secondary" onclick="generateRandomRoute()">気分ガチャ</button>
       </div>
+      <div id="loadingBox" class="loading">ルートを計算中です。スマホでは数秒かかることがあります。</div>
+      <p class="muted" style="grid-column:1/-1;margin:0;">
+        表示モード：軽量モードは直線＋矢印で速く表示します。高精度モードは道なりルートを取得します。
+      </p>
     </section>
 
     <section class="card" id="routeCard">
       <p class="route-title">まずは「ルートを作る」を押してください</p>
-      <p class="muted">地図上にピンと道なりルートが表示されます。スポットの「詳細」を押すと公式サイトや関連情報に飛べます。</p>
+      <p class="muted">軽量モードなら素早く表示、高精度モードなら道なりルートを優先して表示します。スポットの「詳細」を押すと公式サイトや関連情報に飛べます。</p>
     </section>
 
     <div class="warning">
@@ -1876,15 +1903,38 @@
       return selected;
     }
 
-    async function fetchRouteGeometry(points) {
+    async function fetchRouteGeometry(points, qualityMode = "light") {
+      // 軽量モード：外部ルートAPIを使わず、直線で高速表示する。
+      if (qualityMode === "light") {
+        return {
+          coordinates: points.map(p => [p.lat, p.lng]),
+          distanceKm: estimateDistance(points),
+          durationMin: estimateDistance(points) / 4.5 * 60,
+          profile: "light"
+        };
+      }
+
+      // 高精度モード：OSRMで道なりルートを取得する。
       const coords = points.map(p => `${p.lng},${p.lat}`).join(";");
       const base = "https://router.project-osrm.org/route/v1";
       const query = `${coords}?overview=full&geometries=geojson&steps=false`;
 
-      // 徒歩ルートを優先。失敗したらdrivingにフォールバック。最後は直線。
+      async function fetchWithTimeout(url, ms = 6000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), ms);
+        try {
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (e) {
+          clearTimeout(timer);
+          throw e;
+        }
+      }
+
       for (const profile of ["foot", "driving"]) {
         try {
-          const res = await fetch(`${base}/${profile}/${query}`);
+          const res = await fetchWithTimeout(`${base}/${profile}/${query}`, 6000);
           if (!res.ok) continue;
           const data = await res.json();
           if (data.routes && data.routes[0] && data.routes[0].geometry) {
@@ -1896,108 +1946,16 @@
             };
           }
         } catch (e) {
-          console.warn("route fetch failed", profile, e);
+          console.warn("route fetch failed or timed out", profile, e);
         }
       }
 
+      // 高精度モードでも取得できない場合は直線に戻す。
       return {
         coordinates: points.map(p => [p.lat, p.lng]),
         distanceKm: estimateDistance(points),
         durationMin: estimateDistance(points) / 4.5 * 60,
         profile: "straight"
-      };
-    }
-
-
-    async function fetchSegmentRoute(from, to) {
-      const result = await fetchRouteGeometry([from, to]);
-      return result;
-    }
-
-
-    function bearingDegrees(fromLatLng, toLatLng) {
-      const lat1 = fromLatLng[0] * Math.PI / 180;
-      const lat2 = toLatLng[0] * Math.PI / 180;
-      const dLng = (toLatLng[1] - fromLatLng[1]) * Math.PI / 180;
-
-      const y = Math.sin(dLng) * Math.cos(lat2);
-      const x = Math.cos(lat1) * Math.sin(lat2) -
-                Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-
-      return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-    }
-
-    function addDirectionArrows(coordinates, color, label) {
-      if (!coordinates || coordinates.length < 2) return;
-
-      // 線の途中に矢印を置く。
-      // その地点から少し先の座標を見て、実際に進む方角へ矢印の先端を向ける。
-      const arrowCount = Math.min(6, Math.max(1, Math.floor(coordinates.length / 30)));
-      const step = Math.floor(coordinates.length / (arrowCount + 1));
-
-      for (let i = 1; i <= arrowCount; i++) {
-        const index = Math.min(coordinates.length - 3, Math.max(1, step * i));
-
-        // その場所に立った時、数歩先へ進む方向を見る。
-        const current = coordinates[index];
-        const ahead = coordinates[Math.min(coordinates.length - 1, index + 2)];
-        const angle = bearingDegrees(current, ahead);
-
-        const icon = L.divIcon({
-          className: "",
-          html: `
-            <div class="direction-arrow-wrap" style="color:${color}; transform: rotate(${angle}deg);">
-              <div class="direction-arrow-triangle"></div>
-            </div>
-          `,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14]
-        });
-
-        L.marker(current, { icon, interactive: false })
-          .bindTooltip(label, { permanent: false, direction: "top" })
-          .addTo(routeLayer);
-      }
-    }
-
-    async function drawColoredRouteSegments(routePoints) {
-      const segmentResults = [];
-      let totalDistance = 0;
-      let totalDuration = 0;
-
-      for (let i = 0; i < routePoints.length - 1; i++) {
-        const from = routePoints[i];
-        const to = routePoints[i + 1];
-        const segment = await fetchSegmentRoute(from, to);
-        totalDistance += segment.distanceKm;
-        totalDuration += segment.durationMin;
-        segmentResults.push(segment);
-
-        const isReturn = i === routePoints.length - 2;
-        const lineColor = isReturn ? "#1f6fb2" : "#2f7d4f";
-
-        L.polyline(segment.coordinates, {
-          weight: isReturn ? 7 : 6,
-          opacity: isReturn ? 0.9 : 0.85,
-          color: lineColor,
-          dashArray: isReturn ? "10, 8" : null
-        })
-        .bindPopup(isReturn ? "帰り：最後のスポット → 法政大学" : `行き：${from.name} → ${to.name}`)
-        .addTo(routeLayer);
-
-        addDirectionArrows(
-          segment.coordinates,
-          lineColor,
-          isReturn ? "帰りの方向" : "行きの方向"
-        );
-      }
-
-      const allCoordinates = segmentResults.flatMap(s => s.coordinates);
-      return {
-        coordinates: allCoordinates,
-        distanceKm: totalDistance,
-        durationMin: totalDuration,
-        profile: segmentResults[0]?.profile || "unknown"
       };
     }
 
@@ -2025,7 +1983,8 @@
           .addTo(markerLayer);
       });
 
-      const route = await drawColoredRouteSegments(routePoints);
+      const qualityMode = document.getElementById("qualitySelect")?.value || "light";
+      const route = await drawColoredRouteSegments(routePoints, qualityMode);
 
       if (route.coordinates.length > 0) {
         const bounds = L.latLngBounds(route.coordinates);
@@ -2038,7 +1997,7 @@
     function renderRouteCard(selected, route) {
       const segment = document.getElementById("segmentSelect").value;
       const maxTime = document.getElementById("timeSelect").value;
-      const profileText = route.profile === "foot" ? "徒歩ルート" : route.profile === "driving" ? "道路沿いルート" : "直線表示";
+      const profileText = route.profile === "light" ? "軽量モード：直線表示" : route.profile === "foot" ? "高精度モード：徒歩ルート" : route.profile === "driving" ? "高精度モード：道路沿いルート" : "取得失敗のため直線表示";
 
       const outboundHtml = selected.map((s, i) => `
         <div class="spot-row">
@@ -2087,13 +2046,26 @@
       `;
     }
 
-    function generateRoute() {
-      const segment = document.getElementById("segmentSelect").value;
-      const maxTime = Number(document.getElementById("timeSelect").value);
-      const count = Number(document.getElementById("countSelect").value);
-      const mode = document.getElementById("modeSelect").value;
-      const selected = selectSpots(segment, maxTime, count, mode);
-      drawRoute(selected);
+    async function generateRoute() {
+      const loadingBox = document.getElementById("loadingBox");
+      const qualityMode = document.getElementById("qualitySelect")?.value || "light";
+      if (loadingBox) {
+        loadingBox.textContent = qualityMode === "light"
+          ? "軽量モードで高速表示しています。"
+          : "高精度モードで道なりルートを計算中です。スマホでは数秒かかることがあります。";
+        loadingBox.classList.add("show");
+      }
+
+      try {
+        const segment = document.getElementById("segmentSelect").value;
+        const maxTime = Number(document.getElementById("timeSelect").value);
+        const count = Number(document.getElementById("countSelect").value);
+        const mode = document.getElementById("modeSelect").value;
+        const selected = selectSpots(segment, maxTime, count, mode);
+        await drawRoute(selected);
+      } finally {
+        if (loadingBox) loadingBox.classList.remove("show");
+      }
     }
 
     function generateRandomRoute() {
@@ -2102,8 +2074,11 @@
       generateRoute();
     }
 
-    // 初期表示
-    generateRoute();
+    // 初期表示は軽くする。スマホでの初回ロード時にルートAPIを叩かない。
+    L.marker([START_POINT.lat, START_POINT.lng], { icon: startIcon })
+      .bindPopup(popupHtml(START_POINT))
+      .addTo(markerLayer);
+    map.setView([START_POINT.lat, START_POINT.lng], 14);
   </script>
 </body>
 </html>
