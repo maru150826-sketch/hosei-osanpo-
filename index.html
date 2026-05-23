@@ -185,7 +185,7 @@
       <label>
         並び方
         <select id="modeSelect">
-          <option value="smart" selected>近い順で自然につなぐ</option>
+          <option value="smart" selected>最短距離で自然につなぐ</option>
           <option value="random">ランダム順</option>
         </select>
       </label>
@@ -1547,7 +1547,18 @@
       return [...array].sort(() => Math.random() - 0.5);
     }
 
+    function routeDistance(points) {
+      let total = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        total += distanceKm(points[i], points[i + 1]);
+      }
+      return total;
+    }
+
     function orderSmart(selected) {
+      if (selected.length <= 1) return selected;
+
+      // まずは現在地から一番近い場所を順番に選ぶ。
       const remaining = [...selected];
       const ordered = [];
       let current = START_POINT;
@@ -1558,6 +1569,36 @@
         ordered.push(next);
         current = next;
       }
+
+      // その後、順番を入れ替えた方が短くなる場合は改善する。
+      // ルートは「法政 → スポット群 → 法政」の総距離で評価する。
+      let improved = true;
+      let guard = 0;
+
+      while (improved && guard < 20) {
+        improved = false;
+        guard++;
+
+        for (let i = 0; i < ordered.length - 1; i++) {
+          for (let j = i + 1; j < ordered.length; j++) {
+            const currentRoute = [START_POINT, ...ordered, START_POINT];
+            const currentDist = routeDistance(currentRoute);
+
+            const candidate = [...ordered];
+            const reversed = candidate.slice(i, j + 1).reverse();
+            candidate.splice(i, j - i + 1, ...reversed);
+
+            const candidateRoute = [START_POINT, ...candidate, START_POINT];
+            const candidateDist = routeDistance(candidateRoute);
+
+            if (candidateDist + 0.01 < currentDist) {
+              ordered.splice(0, ordered.length, ...candidate);
+              improved = true;
+            }
+          }
+        }
+      }
+
       return ordered;
     }
 
@@ -1594,11 +1635,34 @@
     }
 
     function scoreRoute(route, targetMin) {
-      const points = [START_POINT, ...route, START_POINT];
+      const ordered = orderSmart(route);
+      const points = [START_POINT, ...ordered, START_POINT];
       const estimatedMin = estimateWalkingMinutes(points);
       const timeDiff = Math.abs(estimatedMin - targetMin);
-      const categoryBonus = route.length * 0.5;
-      return { estimatedMin, score: timeDiff - categoryBonus };
+
+      const totalDistance = routeDistance(points);
+      const farthestFromCampus = Math.max(...ordered.map(s => distanceKm(START_POINT, s)));
+      const avgLegDistance = totalDistance / Math.max(1, points.length - 1);
+      const maxLegDistance = Math.max(
+        ...points.slice(0, -1).map((p, i) => distanceKm(p, points[i + 1]))
+      );
+
+      // 遠回りを避けるためのペナルティ。
+      // 時間合わせのために遠すぎる場所を混ぜるルートは落とす。
+      const detourPenalty =
+        Math.max(0, farthestFromCampus - 2.2) * 12 +
+        Math.max(0, maxLegDistance - 1.6) * 10 +
+        Math.max(0, avgLegDistance - 1.1) * 6;
+
+      const categoryBonus = ordered.length * 0.3;
+      return {
+        route: ordered,
+        estimatedMin,
+        score: timeDiff + detourPenalty - categoryBonus,
+        totalDistance,
+        farthestFromCampus,
+        maxLegDistance
+      };
     }
 
     function selectBestRoute(segment, targetMin, density, mode) {
@@ -1608,7 +1672,7 @@
 
       // 目標時間に合いやすくするため、近すぎ/遠すぎの候補をざっくり調整。
       // 15分は近場中心、60分は少し広めも混ぜる。
-      const maxOneWay = targetMin <= 15 ? 0.9 : targetMin <= 30 ? 1.5 : targetMin <= 45 ? 2.2 : 3.2;
+      const maxOneWay = targetMin <= 15 ? 0.8 : targetMin <= 30 ? 1.3 : targetMin <= 45 ? 1.8 : 2.4;
       const distanceFiltered = candidates.filter(s => distanceKm(START_POINT, s) <= maxOneWay);
       if (distanceFiltered.length >= getDesiredCount(targetMin, density)) {
         candidates = distanceFiltered;
@@ -1622,7 +1686,7 @@
         if (route.length === 0) continue;
         const scored = scoreRoute(route, targetMin);
         if (!best || scored.score < best.score) {
-          best = { route, ...scored };
+          best = { ...scored };
         }
       }
 
@@ -1841,7 +1905,7 @@
         <div class="legend">
           <span class="legend-item"><span class="line-sample go-line"></span>行き：緑の線＋矢印</span>
           <span class="legend-item"><span class="line-sample back-line"></span>帰り：青の点線＋矢印</span>
-          <span class="legend-item">半径4km以内の候補から生成</span>
+          <span class="legend-item">半径4km以内・地点間の距離が短くなる順で生成</span>
         </div>
 
         <div class="route-section-title">行きのルート：法政大学 → スポット</div>
@@ -1851,7 +1915,7 @@
         <div class="spots-list">${returnHtml}</div>
 
         <p class="muted" style="margin-top:12px;">
-          注意点：表示時間は徒歩時間の目安です。カフェ・神社・公園などでの滞在時間は含めていません。おすすめ理由はMVP用の紹介文です。飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
+          注意点：表示時間は徒歩時間の目安です。カフェ・神社・公園などでの滞在時間は含めていません。おすすめ理由はMVP用の紹介文です。地点同士ができるだけ短くつながる順番に並べています。飲食店は営業時間・定休日が変わるため、行く前に詳細リンクで確認してください。
         </p>
       `;
     }
