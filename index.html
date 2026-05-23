@@ -75,6 +75,45 @@
       color: #3e6b45;
       font-weight: 700;
     }
+
+    .route-summary {
+      background: linear-gradient(135deg, #eef8ee, #fff8df);
+      border: 1px solid #dfead9;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .route-summary h3 {
+      margin: 12px 0 6px;
+      font-size: 15px;
+      color: #2f7d4f;
+    }
+    .route-summary p {
+      margin: 0;
+      color: #4f5d4f;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .benefit-list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: #4f5d4f;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .walk-cta {
+      margin-top: 12px;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      background: #2f7d4f;
+      color: white;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-weight: 900;
+      box-shadow: 0 6px 14px rgba(47, 125, 79, 0.22);
+    }
+
     .warning {
       font-size: 12px;
       line-height: 1.6;
@@ -1863,9 +1902,70 @@
       renderRouteCard(selected, route, targetMin, estimatedMin);
     }
 
+
+    function getRouteThemeName(segment, targetMin, selected) {
+      const names = selected.map(s => s.name).join(" ");
+      if (segment === "リフレッシュ") {
+        if (names.includes("外濠") || names.includes("市ヶ谷") || names.includes("飯田橋")) return "外濠リセットルート";
+        if (names.includes("北の丸") || names.includes("千鳥ヶ淵")) return "水辺と緑のリフレッシュルート";
+        return "気分切り替えさんぽ";
+      }
+      if (segment === "デート") {
+        if (names.includes("神楽坂")) return "神楽坂ゆるデートルート";
+        if (names.includes("カナル") || names.includes("水辺")) return "水辺デートさんぽ";
+        return "会話が続くデートさんぽ";
+      }
+      if (segment === "歴史") {
+        if (names.includes("靖国") || names.includes("門")) return "九段・江戸の歴史ルート";
+        return "街の歴史発見ルート";
+      }
+      if (segment === "街歩き") {
+        if (names.includes("神楽坂")) return "神楽坂路地めぐりルート";
+        return "いつもと違う街歩きルート";
+      }
+      if (segment === "グルメ") {
+        if (names.includes("神楽坂")) return "神楽坂ごほうびグルメルート";
+        return "歩いた先のごほうびルート";
+      }
+      return `${targetMin}分おまかせ気分ガチャ`;
+    }
+
+    function getRouteWhy(segment, selected) {
+      const spotNames = selected.map(s => s.name).join("、");
+      if (segment === "リフレッシュ") {
+        return `${spotNames}を通りながら、水辺や緑、静かな道を感じられるため、空きコマや授業後にスマホを見続けるよりも短時間で気分転換しやすいルートです。`;
+      }
+      if (segment === "デート") {
+        return `${spotNames}を自然につなぐため、会話のきっかけや写真を撮れる場所が生まれます。目的地を決めすぎず、気まずくなりにくい散歩デートに向いています。`;
+      }
+      if (segment === "歴史") {
+        return `${spotNames}をめぐることで、ただ歩くだけでなく街の背景や歴史を感じられます。観光気分を少し入れたい時にちょうどよいルートです。`;
+      }
+      if (segment === "街歩き") {
+        return `${spotNames}を通ることで、いつもと違う道や路地を発見しやすくなります。目的地を決めすぎず、街の雰囲気を楽しみたい時に合います。`;
+      }
+      if (segment === "グルメ") {
+        return `${spotNames}を散歩の目的地にすることで、歩いた後の休憩や食事につなげやすくなります。ただ移動するだけでなく、ごほうび感のあるルートです。`;
+      }
+      return `${spotNames}をランダムに組み合わせ、普段なら選ばない道を歩けるようにしています。目的地が決まっていない時の偶然の発見に向いています。`;
+    }
+
+    function getRecommendedPerson(segment, targetMin) {
+      if (segment === "リフレッシュ") return "空きコマや授業後をスマホだけで終わらせたくない人";
+      if (segment === "デート") return "食事前後に、会話しながら軽く歩ける場所を探している人";
+      if (segment === "歴史") return "ただ歩くだけでなく、街の背景や意味も感じたい人";
+      if (segment === "街歩き") return "いつも同じ道に飽きて、少し違う景色を見たい人";
+      if (segment === "グルメ") return "散歩のあとにカフェやご飯へ自然につなげたい人";
+      return `${targetMin}分くらい暇で、行き先を決めずに外へ出たい人`;
+    }
+
     function renderRouteCard(selected, route, targetMin, estimatedMin) {
       const segment = document.getElementById("segmentSelect").value;
       const actualMin = Math.round(route.durationMin);
+      const steps = Math.round(route.distanceKm * 1350);
+      const routeThemeName = getRouteThemeName(segment, targetMin, selected);
+      const routeWhy = getRouteWhy(segment, selected);
+      const recommendedPerson = getRecommendedPerson(segment, targetMin);
       const diff = actualMin - targetMin;
       const diffText = diff === 0 ? "目標ぴったり" : diff > 0 ? `目標より約${diff}分長め` : `目標より約${Math.abs(diff)}分短め`;
       const profileText = route.profile === "road" ? "道なり表示" : "道なり取得失敗のため簡易表示";
@@ -1897,11 +1997,27 @@
       `;
 
       document.getElementById("routeCard").innerHTML = `
-        <p class="route-title">${segment}・約${targetMin}分さんぽ</p>
+        <p class="route-title">${routeThemeName}</p>
         <p class="muted">
-          実際の目安：${route.distanceKm.toFixed(1)}km / 約${actualMin}分（${diffText}） / ${profileText}<br>
+          ${segment} / 目標${targetMin}分 / 約${route.distanceKm.toFixed(1)}km / 約${actualMin}分 / 約${steps.toLocaleString()}歩（${diffText}） / ${profileText}<br>
           滞在時間は含めず、歩行時間だけで計算しています。
         </p>
+
+        <div class="route-summary">
+          <h3>なぜこのルート？</h3>
+          <p>${routeWhy}</p>
+
+          <h3>歩くと得られること</h3>
+          <ul class="benefit-list">
+            <li>お金を使わずに気分転換できる</li>
+            <li>約${steps.toLocaleString()}歩増やせる</li>
+            <li>法政大学周辺に戻りやすい</li>
+          </ul>
+
+          <p style="margin-top:10px;"><strong>こんな人におすすめ：</strong>${recommendedPerson}</p>
+          <a class="walk-cta" href="#map">このルートで歩く</a>
+        </div>
+
         <div class="legend">
           <span class="legend-item"><span class="line-sample go-line"></span>行き：緑の線＋矢印</span>
           <span class="legend-item"><span class="line-sample back-line"></span>帰り：青の点線＋矢印</span>
